@@ -218,335 +218,335 @@ with tab1:
             """)
     
     
-    if st.button("🧮 Hitung", type="primary"):
+    # Auto-calculate (no button needed - reactive)
+    st.markdown("---")
+    st.subheader("📊 Hasil Perhitungan")
+    
+    # Calculate seedling count
+    jarak_dalam_m = jarak_dalam_baris / 100
+    jarak_antar_m = jarak_antar_baris / 100
+    
+    # Tanaman per bedengan
+    tanaman_per_baris = int(panjang_bedengan / jarak_dalam_m)
+    tanaman_per_bedengan = tanaman_per_baris * jumlah_baris
+    
+    # Total bedengan
+    jarak_antar_bedengan = 0.5  # meter (standar)
+    lebar_total_per_bedengan = lebar_bedengan + jarak_antar_bedengan
+    
+    jumlah_bedengan = int(luas_m2 / (panjang_bedengan * lebar_total_per_bedengan))
+    
+    # Total tanaman
+    total_tanaman = tanaman_per_bedengan * jumlah_bedengan
+    
+    # Populasi per ha
+    populasi_per_ha = int((10000 / (jarak_dalam_m * jarak_antar_m)))
+    
+    # Mulsa calculation
+    panjang_mulsa_per_bedengan = panjang_bedengan + 0.5  # Extra 0.5m
+    total_panjang_mulsa = panjang_mulsa_per_bedengan * jumlah_bedengan
+    
+    # Mulsa in rolls (assuming 200m per roll, 1.2m width)
+    lebar_mulsa_standar = 1.2  # meter
+    panjang_per_roll = 200  # meter
+    jumlah_roll_mulsa = int(total_panjang_mulsa / panjang_per_roll) + 1
+    
+    # Display results
+    col_r1, col_r2, col_r3 = st.columns(3)
+    
+    with col_r1:
+        st.metric(
+            "Total Bibit Dibutuhkan",
+            f"{total_tanaman:,} batang",
+            help="Tambah 10-20% untuk cadangan"
+        )
+        st.info(f"**Cadangan 15%:** {int(total_tanaman * 1.15):,} batang")
+    
+    with col_r2:
+        st.metric(
+            "Populasi per Ha",
+            f"{populasi_per_ha:,} tanaman/ha",
+            help="Berdasarkan jarak tanam"
+        )
+        st.info(f"**Jumlah Bedengan:** {jumlah_bedengan} bedengan")
+    
+    with col_r3:
+        st.metric(
+            "Panjang Mulsa",
+            f"{total_panjang_mulsa:,.0f} m",
+            help="Total panjang mulsa yang dibutuhkan"
+        )
+        st.info(f"**Jumlah Roll:** {jumlah_roll_mulsa} roll (@200m)")
+    
+    st.markdown("---")
+    
+    # Detailed breakdown
+    st.subheader("📋 Rincian Detail")
+    
+    detail_data = {
+        "Parameter": [
+            "Luas Lahan",
+            "Panjang Bedengan",
+            "Lebar Bedengan",
+            "Jumlah Bedengan",
+            "Jarak Dalam Baris",
+            "Jarak Antar Baris",
+            "Jumlah Baris per Bedengan",
+            "Tanaman per Baris",
+            "Tanaman per Bedengan",
+            "Total Tanaman",
+            "Populasi per Ha",
+            "Panjang Mulsa Total",
+            "Jumlah Roll Mulsa (200m)"
+        ],
+        "Nilai": [
+            f"{luas_ha_calc:.2f} Ha ({luas_m2:,} m²)",
+            f"{panjang_bedengan} m",
+            f"{lebar_bedengan} m",
+            f"{jumlah_bedengan} bedengan",
+            f"{jarak_dalam_baris} cm",
+            f"{jarak_antar_baris} cm",
+            f"{jumlah_baris} baris",
+            f"{tanaman_per_baris} batang",
+            f"{tanaman_per_bedengan} batang",
+            f"{total_tanaman:,} batang",
+            f"{populasi_per_ha:,} tanaman/ha",
+            f"{total_panjang_mulsa:,.0f} m",
+            f"{jumlah_roll_mulsa} roll"
+        ]
+    }
+    
+    df_detail = pd.DataFrame(detail_data)
+    st.dataframe(df_detail, use_container_width=True, hide_index=True)
+    
+    st.markdown("---")
+    
+    # Cost estimation
+    st.subheader("💰 Estimasi Biaya")
+    
+    col_c1, col_c2 = st.columns(2)
+    
+    with col_c1:
+        st.markdown("**Bibit:**")
+        harga_bibit = st.number_input(
+            "Harga per batang (Rp)",
+            min_value=100,
+            max_value=5000,
+            value=500,
+            step=100
+        )
+        
+        bibit_dengan_cadangan = int(total_tanaman * 1.15)
+        total_biaya_bibit = bibit_dengan_cadangan * harga_bibit
+        
+        st.success(f"Total Biaya Bibit: **Rp {total_biaya_bibit:,}**")
+        st.caption(f"{bibit_dengan_cadangan:,} batang × Rp {harga_bibit:,}")
+    
+    with col_c2:
+        st.markdown("**Mulsa:**")
+        harga_mulsa_per_roll = st.number_input(
+            "Harga per roll (Rp)",
+            min_value=50000,
+            max_value=500000,
+            value=180000,
+            step=10000,
+            help="1 roll = 200m × 1.2m"
+        )
+        
+        total_biaya_mulsa = jumlah_roll_mulsa * harga_mulsa_per_roll
+        
+        st.success(f"Total Biaya Mulsa: **Rp {total_biaya_mulsa:,}**")
+        st.caption(f"{jumlah_roll_mulsa} roll × Rp {harga_mulsa_per_roll:,}")
+    
+    # Intercrop calculations
+    if use_intercrop and intercrop_type:
         st.markdown("---")
-        st.subheader("📊 Hasil Perhitungan")
+        st.subheader(f"🌾 Tumpang Sari: {intercrop_type}")
         
-        # Calculate seedling count
-        jarak_dalam_m = jarak_dalam_baris / 100
-        jarak_antar_m = jarak_antar_baris / 100
+        # Calculate intercrop seedlings
+        # Intercrop ditanam di tengah baris (between rows)
+        intercrop_spacing_m = intercrop_spacing / 100
         
-        # Tanaman per bedengan
-        tanaman_per_baris = int(panjang_bedengan / jarak_dalam_m)
-        tanaman_per_bedengan = tanaman_per_baris * jumlah_baris
+        # Number of intercrop plants per bed length
+        intercrop_per_bed = int(panjang_bedengan / intercrop_spacing_m)
         
-        # Total bedengan
-        jarak_antar_bedengan = 0.5  # meter (standar)
-        lebar_total_per_bedengan = lebar_bedengan + jarak_antar_bedengan
+        # Total intercrop plants (1 row per bed, di tengah)
+        total_intercrop = intercrop_per_bed * jumlah_bedengan
         
-        jumlah_bedengan = int(luas_m2 / (panjang_bedengan * lebar_total_per_bedengan))
+        # With buffer
+        intercrop_dengan_cadangan = int(total_intercrop * 1.15)
+        total_biaya_intercrop = intercrop_dengan_cadangan * intercrop_price
         
-        # Total tanaman
-        total_tanaman = tanaman_per_bedengan * jumlah_bedengan
+        col_ic1, col_ic2, col_ic3 = st.columns(3)
         
-        # Populasi per ha
-        populasi_per_ha = int((10000 / (jarak_dalam_m * jarak_antar_m)))
-        
-        # Mulsa calculation
-        panjang_mulsa_per_bedengan = panjang_bedengan + 0.5  # Extra 0.5m
-        total_panjang_mulsa = panjang_mulsa_per_bedengan * jumlah_bedengan
-        
-        # Mulsa in rolls (assuming 200m per roll, 1.2m width)
-        lebar_mulsa_standar = 1.2  # meter
-        panjang_per_roll = 200  # meter
-        jumlah_roll_mulsa = int(total_panjang_mulsa / panjang_per_roll) + 1
-        
-        # Display results
-        col_r1, col_r2, col_r3 = st.columns(3)
-        
-        with col_r1:
+        with col_ic1:
             st.metric(
-                "Total Bibit Dibutuhkan",
-                f"{total_tanaman:,} batang",
-                help="Tambah 10-20% untuk cadangan"
+                f"Bibit {intercrop_type}",
+                f"{total_intercrop:,} batang",
+                help="Tanaman sela di tengah baris"
             )
-            st.info(f"**Cadangan 15%:** {int(total_tanaman * 1.15):,} batang")
+            st.caption(f"Cadangan 15%: {intercrop_dengan_cadangan:,} batang")
         
-        with col_r2:
+        with col_ic2:
             st.metric(
-                "Populasi per Ha",
-                f"{populasi_per_ha:,} tanaman/ha",
-                help="Berdasarkan jarak tanam"
+                "Jarak Tanam",
+                f"{intercrop_spacing} cm",
+                help=f"Jarak antar {intercrop_type}"
             )
-            st.info(f"**Jumlah Bedengan:** {jumlah_bedengan} bedengan")
+            st.caption(f"{intercrop_per_bed} tanaman/bedengan")
         
-        with col_r3:
+        with col_ic3:
             st.metric(
-                "Panjang Mulsa",
-                f"{total_panjang_mulsa:,.0f} m",
-                help="Total panjang mulsa yang dibutuhkan"
+                f"Biaya Bibit {intercrop_type}",
+                f"Rp {total_biaya_intercrop:,}"
             )
-            st.info(f"**Jumlah Roll:** {jumlah_roll_mulsa} roll (@200m)")
+            st.caption(f"{intercrop_dengan_cadangan:,} × Rp {intercrop_price:,}")
         
-        st.markdown("---")
+        st.info(f"""
+        **💡 Manfaat Tumpang Sari {intercrop_type}:**
+        - Optimasi penggunaan lahan
+        - Tambahan pendapatan saat fase vegetatif cabai
+        - Mengurangi gulma
+        - Diversifikasi risiko
         
-        # Detailed breakdown
-        st.subheader("📋 Rincian Detail")
-        
-        detail_data = {
-            "Parameter": [
-                "Luas Lahan",
-                "Panjang Bedengan",
-                "Lebar Bedengan",
-                "Jumlah Bedengan",
-                "Jarak Dalam Baris",
-                "Jarak Antar Baris",
-                "Jumlah Baris per Bedengan",
-                "Tanaman per Baris",
-                "Tanaman per Bedengan",
-                "Total Tanaman",
-                "Populasi per Ha",
-                "Panjang Mulsa Total",
-                "Jumlah Roll Mulsa (200m)"
-            ],
-            "Nilai": [
-                f"{luas_ha_calc:.2f} Ha ({luas_m2:,} m²)",
-                f"{panjang_bedengan} m",
-                f"{lebar_bedengan} m",
-                f"{jumlah_bedengan} bedengan",
-                f"{jarak_dalam_baris} cm",
-                f"{jarak_antar_baris} cm",
-                f"{jumlah_baris} baris",
-                f"{tanaman_per_baris} batang",
-                f"{tanaman_per_bedengan} batang",
-                f"{total_tanaman:,} batang",
-                f"{populasi_per_ha:,} tanaman/ha",
-                f"{total_panjang_mulsa:,.0f} m",
-                f"{jumlah_roll_mulsa} roll"
-            ]
-        }
-        
-        df_detail = pd.DataFrame(detail_data)
-        st.dataframe(df_detail, use_container_width=True, hide_index=True)
-        
-        st.markdown("---")
-        
-        # Cost estimation
-        st.subheader("💰 Estimasi Biaya")
-        
-        col_c1, col_c2 = st.columns(2)
-        
-        with col_c1:
-            st.markdown("**Bibit:**")
-            harga_bibit = st.number_input(
-                "Harga per batang (Rp)",
-                min_value=100,
-                max_value=5000,
-                value=500,
-                step=100
-            )
-            
-            bibit_dengan_cadangan = int(total_tanaman * 1.15)
-            total_biaya_bibit = bibit_dengan_cadangan * harga_bibit
-            
-            st.success(f"Total Biaya Bibit: **Rp {total_biaya_bibit:,}**")
-            st.caption(f"{bibit_dengan_cadangan:,} batang × Rp {harga_bibit:,}")
-        
-        with col_c2:
-            st.markdown("**Mulsa:**")
-            harga_mulsa_per_roll = st.number_input(
-                "Harga per roll (Rp)",
-                min_value=50000,
-                max_value=500000,
-                value=180000,
-                step=10000,
-                help="1 roll = 200m × 1.2m"
-            )
-            
-            total_biaya_mulsa = jumlah_roll_mulsa * harga_mulsa_per_roll
-            
-            st.success(f"Total Biaya Mulsa: **Rp {total_biaya_mulsa:,}**")
-            st.caption(f"{jumlah_roll_mulsa} roll × Rp {harga_mulsa_per_roll:,}")
-        
-        # Intercrop calculations
-        if use_intercrop and intercrop_type:
-            st.markdown("---")
-            st.subheader(f"🌾 Tumpang Sari: {intercrop_type}")
-            
-            # Calculate intercrop seedlings
-            # Intercrop ditanam di tengah baris (between rows)
-            intercrop_spacing_m = intercrop_spacing / 100
-            
-            # Number of intercrop plants per bed length
-            intercrop_per_bed = int(panjang_bedengan / intercrop_spacing_m)
-            
-            # Total intercrop plants (1 row per bed, di tengah)
-            total_intercrop = intercrop_per_bed * jumlah_bedengan
-            
-            # With buffer
-            intercrop_dengan_cadangan = int(total_intercrop * 1.15)
-            total_biaya_intercrop = intercrop_dengan_cadangan * intercrop_price
-            
-            col_ic1, col_ic2, col_ic3 = st.columns(3)
-            
-            with col_ic1:
-                st.metric(
-                    f"Bibit {intercrop_type}",
-                    f"{total_intercrop:,} batang",
-                    help="Tanaman sela di tengah baris"
-                )
-                st.caption(f"Cadangan 15%: {intercrop_dengan_cadangan:,} batang")
-            
-            with col_ic2:
-                st.metric(
-                    "Jarak Tanam",
-                    f"{intercrop_spacing} cm",
-                    help=f"Jarak antar {intercrop_type}"
-                )
-                st.caption(f"{intercrop_per_bed} tanaman/bedengan")
-            
-            with col_ic3:
-                st.metric(
-                    f"Biaya Bibit {intercrop_type}",
-                    f"Rp {total_biaya_intercrop:,}"
-                )
-                st.caption(f"{intercrop_dengan_cadangan:,} × Rp {intercrop_price:,}")
-            
-            st.info(f"""
-            **💡 Manfaat Tumpang Sari {intercrop_type}:**
-            - Optimasi penggunaan lahan
-            - Tambahan pendapatan saat fase vegetatif cabai
-            - Mengurangi gulma
-            - Diversifikasi risiko
-            
-            **⚠️ Perhatian:**
-            - Jangan sampai menaungi cabai
-            - Panen {intercrop_type} sebelum cabai berbuah
-            - Sesuaikan pemupukan untuk 2 tanaman
-            """)
+        **⚠️ Perhatian:**
+        - Jangan sampai menaungi cabai
+        - Panen {intercrop_type} sebelum cabai berbuah
+        - Sesuaikan pemupukan untuk 2 tanaman
+        """)
 
+    
+    # Total
+    total_biaya_teknis = total_biaya_bibit + total_biaya_mulsa
+    
+    if use_intercrop and intercrop_type:
+        total_biaya_teknis += total_biaya_intercrop
+    
+    st.markdown("---")
+    
+    if use_intercrop and intercrop_type:
+        st.success(f"""
+        ### 💵 Total Biaya (Bibit Cabai + {intercrop_type} + Mulsa)
+        **Rp {total_biaya_teknis:,}**
         
-        # Total
-        total_biaya_teknis = total_biaya_bibit + total_biaya_mulsa
+        - Bibit Cabai: Rp {total_biaya_bibit:,}
+        - Bibit {intercrop_type}: Rp {total_biaya_intercrop:,}
+        - Mulsa: Rp {total_biaya_mulsa:,}
+        """)
+    else:
+        st.success(f"""
+        ### 💵 Total Biaya (Bibit + Mulsa)
+        **Rp {total_biaya_teknis:,}**
         
-        if use_intercrop and intercrop_type:
-            total_biaya_teknis += total_biaya_intercrop
-        
+        - Bibit: Rp {total_biaya_bibit:,}
+        - Mulsa: Rp {total_biaya_mulsa:,}
+        """)
+    
+    # Per-unit cost analysis
+    st.markdown("---")
+    st.subheader("📊 Analisis Biaya per Unit")
+    
+    col_u1, col_u2, col_u3 = st.columns(3)
+    
+    with col_u1:
+        biaya_per_tanaman_cabai = total_biaya_bibit / total_tanaman if total_tanaman > 0 else 0
+        st.metric(
+            "Biaya per Tanaman Cabai",
+            f"Rp {biaya_per_tanaman_cabai:,.0f}",
+            help="Total biaya bibit / jumlah tanaman"
+        )
+        st.caption(f"Rp {total_biaya_bibit:,} ÷ {total_tanaman:,} tanaman")
+    
+    with col_u2:
+        biaya_per_m2 = total_biaya_teknis / luas_m2 if luas_m2 > 0 else 0
+        st.metric(
+            "Biaya per m²",
+            f"Rp {biaya_per_m2:,.0f}",
+            help="Total biaya teknis / luas lahan"
+        )
+        st.caption(f"Rp {total_biaya_teknis:,} ÷ {luas_m2:,} m²")
+    
+    with col_u3:
+        biaya_per_ha = total_biaya_teknis / luas_ha_calc if luas_ha_calc > 0 else 0
+        st.metric(
+            "Biaya per Ha",
+            f"Rp {biaya_per_ha:,.0f}",
+            help="Total biaya teknis / luas (ha)"
+        )
+        st.caption(f"Rp {total_biaya_teknis:,} ÷ {luas_ha_calc:.2f} ha")
+    
+    # Intercrop per-unit cost
+    if use_intercrop and intercrop_type:
         st.markdown("---")
+        st.subheader(f"📊 Analisis Biaya {intercrop_type}")
         
-        if use_intercrop and intercrop_type:
-            st.success(f"""
-            ### 💵 Total Biaya (Bibit Cabai + {intercrop_type} + Mulsa)
-            **Rp {total_biaya_teknis:,}**
-            
-            - Bibit Cabai: Rp {total_biaya_bibit:,}
-            - Bibit {intercrop_type}: Rp {total_biaya_intercrop:,}
-            - Mulsa: Rp {total_biaya_mulsa:,}
-            """)
-        else:
-            st.success(f"""
-            ### 💵 Total Biaya (Bibit + Mulsa)
-            **Rp {total_biaya_teknis:,}**
-            
-            - Bibit: Rp {total_biaya_bibit:,}
-            - Mulsa: Rp {total_biaya_mulsa:,}
-            """)
+        col_ic_u1, col_ic_u2, col_ic_u3 = st.columns(3)
         
-        # Per-unit cost analysis
-        st.markdown("---")
-        st.subheader("📊 Analisis Biaya per Unit")
-        
-        col_u1, col_u2, col_u3 = st.columns(3)
-        
-        with col_u1:
-            biaya_per_tanaman_cabai = total_biaya_bibit / total_tanaman if total_tanaman > 0 else 0
+        with col_ic_u1:
+            biaya_per_tanaman_intercrop = total_biaya_intercrop / total_intercrop if total_intercrop > 0 else 0
             st.metric(
-                "Biaya per Tanaman Cabai",
-                f"Rp {biaya_per_tanaman_cabai:,.0f}",
-                help="Total biaya bibit / jumlah tanaman"
+                f"Biaya per Tanaman {intercrop_type}",
+                f"Rp {biaya_per_tanaman_intercrop:,.0f}",
+                help=f"Total biaya {intercrop_type} / jumlah tanaman"
             )
-            st.caption(f"Rp {total_biaya_bibit:,} ÷ {total_tanaman:,} tanaman")
+            st.caption(f"Rp {total_biaya_intercrop:,} ÷ {total_intercrop:,} tanaman")
         
-        with col_u2:
-            biaya_per_m2 = total_biaya_teknis / luas_m2 if luas_m2 > 0 else 0
+        with col_ic_u2:
+            ratio_intercrop_cabai = (total_intercrop / total_tanaman * 100) if total_tanaman > 0 else 0
             st.metric(
-                "Biaya per m²",
-                f"Rp {biaya_per_m2:,.0f}",
-                help="Total biaya teknis / luas lahan"
+                "Rasio Tumpang Sari",
+                f"{ratio_intercrop_cabai:.1f}%",
+                help=f"Jumlah {intercrop_type} vs Cabai"
             )
-            st.caption(f"Rp {total_biaya_teknis:,} ÷ {luas_m2:,} m²")
+            st.caption(f"{total_intercrop:,} {intercrop_type} : {total_tanaman:,} Cabai")
         
-        with col_u3:
-            biaya_per_ha = total_biaya_teknis / luas_ha_calc if luas_ha_calc > 0 else 0
+        with col_ic_u3:
+            total_populasi = total_tanaman + total_intercrop
             st.metric(
-                "Biaya per Ha",
-                f"Rp {biaya_per_ha:,.0f}",
-                help="Total biaya teknis / luas (ha)"
+                "Total Populasi",
+                f"{total_populasi:,} tanaman",
+                help="Cabai + Tumpang Sari"
             )
-            st.caption(f"Rp {total_biaya_teknis:,} ÷ {luas_ha_calc:.2f} ha")
-        
-        # Intercrop per-unit cost
-        if use_intercrop and intercrop_type:
-            st.markdown("---")
-            st.subheader(f"📊 Analisis Biaya {intercrop_type}")
-            
-            col_ic_u1, col_ic_u2, col_ic_u3 = st.columns(3)
-            
-            with col_ic_u1:
-                biaya_per_tanaman_intercrop = total_biaya_intercrop / total_intercrop if total_intercrop > 0 else 0
-                st.metric(
-                    f"Biaya per Tanaman {intercrop_type}",
-                    f"Rp {biaya_per_tanaman_intercrop:,.0f}",
-                    help=f"Total biaya {intercrop_type} / jumlah tanaman"
-                )
-                st.caption(f"Rp {total_biaya_intercrop:,} ÷ {total_intercrop:,} tanaman")
-            
-            with col_ic_u2:
-                ratio_intercrop_cabai = (total_intercrop / total_tanaman * 100) if total_tanaman > 0 else 0
-                st.metric(
-                    "Rasio Tumpang Sari",
-                    f"{ratio_intercrop_cabai:.1f}%",
-                    help=f"Jumlah {intercrop_type} vs Cabai"
-                )
-                st.caption(f"{total_intercrop:,} {intercrop_type} : {total_tanaman:,} Cabai")
-            
-            with col_ic_u3:
-                total_populasi = total_tanaman + total_intercrop
-                st.metric(
-                    "Total Populasi",
-                    f"{total_populasi:,} tanaman",
-                    help="Cabai + Tumpang Sari"
-                )
-                st.caption(f"{total_tanaman:,} + {total_intercrop:,}")
-        
-        # RAB Integration Summary
-        st.markdown("---")
-        st.subheader("🔗 Integrasi dengan RAB")
-        
-        st.info("""
-        **💡 Cara Menggunakan Hasil Ini di RAB:**
-        
-        1. **Catat Hasil Perhitungan:**
-           - Total bibit cabai: {bibit_cabai:,} batang
-           - Total bibit {intercrop}: {bibit_intercrop:,} batang (jika ada)
-           - Total mulsa: {roll_mulsa} roll
-           - Total biaya teknis: Rp {biaya_teknis:,}
-        
-        2. **Masuk ke Tab "Hitung RAB Detail":**
-           - Pilih skenario budidaya
-           - Edit item "Bibit" dengan jumlah dari perhitungan ini
-           - Edit item "Mulsa" dengan jumlah roll
-           - Tambahkan item baru untuk tumpang sari (jika ada)
-        
-        3. **Manfaat Integrasi:**
-           - Budget lebih akurat (based on actual land size)
-           - Tidak over/under estimate bibit
-           - Optimasi penggunaan mulsa
-           - Include intercropping costs
-        """.format(
-            bibit_cabai=bibit_dengan_cadangan,
-            intercrop=intercrop_type if use_intercrop else "N/A",
-            bibit_intercrop=intercrop_dengan_cadangan if use_intercrop and intercrop_type else 0,
-            roll_mulsa=jumlah_roll_mulsa,
-            biaya_teknis=total_biaya_teknis
-        ))
-        
-        # Quick action buttons
-        col_btn1, col_btn2 = st.columns(2)
-        
-        with col_btn1:
-            if st.button("📋 Copy Data ke Clipboard", help="Copy ringkasan untuk paste ke RAB"):
-                summary_text = f"""
+            st.caption(f"{total_tanaman:,} + {total_intercrop:,}")
+    
+    # RAB Integration Summary
+    st.markdown("---")
+    st.subheader("🔗 Integrasi dengan RAB")
+    
+    st.info("""
+    **💡 Cara Menggunakan Hasil Ini di RAB:**
+    
+    1. **Catat Hasil Perhitungan:**
+       - Total bibit cabai: {bibit_cabai:,} batang
+       - Total bibit {intercrop}: {bibit_intercrop:,} batang (jika ada)
+       - Total mulsa: {roll_mulsa} roll
+       - Total biaya teknis: Rp {biaya_teknis:,}
+    
+    2. **Masuk ke Tab "Hitung RAB Detail":**
+       - Pilih skenario budidaya
+       - Edit item "Bibit" dengan jumlah dari perhitungan ini
+       - Edit item "Mulsa" dengan jumlah roll
+       - Tambahkan item baru untuk tumpang sari (jika ada)
+    
+    3. **Manfaat Integrasi:**
+       - Budget lebih akurat (based on actual land size)
+       - Tidak over/under estimate bibit
+       - Optimasi penggunaan mulsa
+       - Include intercropping costs
+    """.format(
+        bibit_cabai=bibit_dengan_cadangan,
+        intercrop=intercrop_type if use_intercrop else "N/A",
+        bibit_intercrop=intercrop_dengan_cadangan if use_intercrop and intercrop_type else 0,
+        roll_mulsa=jumlah_roll_mulsa,
+        biaya_teknis=total_biaya_teknis
+    ))
+    
+    # Quick action buttons
+    col_btn1, col_btn2 = st.columns(2)
+    
+    with col_btn1:
+        if st.button("📋 Copy Data ke Clipboard", help="Copy ringkasan untuk paste ke RAB"):
+            summary_text = f"""
 HASIL KALKULATOR TEKNIS
 Luas: {luas_ha_calc:.2f} Ha ({luas_m2:,} m²)
 
@@ -560,36 +560,36 @@ MULSA:
 - Jumlah roll: {jumlah_roll_mulsa} roll
 - Total biaya mulsa: Rp {total_biaya_mulsa:,}
 """
-                if use_intercrop and intercrop_type:
-                    summary_text += f"""
+            if use_intercrop and intercrop_type:
+                summary_text += f"""
 {intercrop_type.upper()}:
 - Bibit dibutuhkan: {intercrop_dengan_cadangan:,} batang
 - Harga per batang: Rp {intercrop_price:,}
 - Total biaya: Rp {total_biaya_intercrop:,}
 """
-                summary_text += f"""
+            summary_text += f"""
 TOTAL BIAYA TEKNIS: Rp {total_biaya_teknis:,}
 """
-                st.code(summary_text, language="text")
-                st.success("✅ Data siap di-copy! Ctrl+C untuk copy.")
-        
-        with col_btn2:
-            st.info("""
-            **📝 Langkah Selanjutnya:**
-            1. Copy data di sebelah
-            2. Buka tab "Hitung RAB Detail"
-            3. Edit items sesuai hasil perhitungan
-            4. Lihat total RAB yang akurat
-            """)
-        
-        # Download
-        csv_detail = df_detail.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Perhitungan (CSV)",
-            data=csv_detail,
-            file_name=f"Perhitungan_Teknis_{luas_ha_calc:.2f}ha.csv",
-            mime="text/csv"
-        )
+            st.code(summary_text, language="text")
+            st.success("✅ Data siap di-copy! Ctrl+C untuk copy.")
+    
+    with col_btn2:
+        st.info("""
+        **📝 Langkah Selanjutnya:**
+        1. Copy data di sebelah
+        2. Buka tab "Hitung RAB Detail"
+        3. Edit items sesuai hasil perhitungan
+        4. Lihat total RAB yang akurat
+        """)
+    
+    # Download
+    csv_detail = df_detail.to_csv(index=False)
+    st.download_button(
+        label="📥 Download Perhitungan (CSV)",
+        data=csv_detail,
+        file_name=f"Perhitungan_Teknis_{luas_ha_calc:.2f}ha.csv",
+        mime="text/csv"
+    )
 
 # Footer
 st.markdown("---")
@@ -631,42 +631,42 @@ with tab2:
     col1, col2 = st.columns(2)
     
     with col1:
-        # Investment comparison
-        fig1 = px.bar(
-            df_viz,
-            x='scenario',
-            y='investasi',
-            title='Perbandingan Investasi',
-            labels={'investasi': 'Investasi (Rp)', 'scenario': 'Skenario'},
-            color='investasi',
-            color_continuous_scale='Reds'
-        )
-        fig1.update_layout(showlegend=False)
-        st.plotly_chart(fig1, use_container_width=True)
+    # Investment comparison
+    fig1 = px.bar(
+        df_viz,
+        x='scenario',
+        y='investasi',
+        title='Perbandingan Investasi',
+        labels={'investasi': 'Investasi (Rp)', 'scenario': 'Skenario'},
+        color='investasi',
+        color_continuous_scale='Reds'
+    )
+    fig1.update_layout(showlegend=False)
+    st.plotly_chart(fig1, use_container_width=True)
     
     with col2:
-        # ROI comparison
-        fig2 = px.bar(
-            df_viz,
-            x='scenario',
-            y='roi_avg',
-            title='Perbandingan ROI',
-            labels={'roi_avg': 'ROI (%)', 'scenario': 'Skenario'},
-            color='roi_avg',
-            color_continuous_scale='Greens'
-        )
-        fig2.update_layout(showlegend=False)
-        st.plotly_chart(fig2, use_container_width=True)
+    # ROI comparison
+    fig2 = px.bar(
+        df_viz,
+        x='scenario',
+        y='roi_avg',
+        title='Perbandingan ROI',
+        labels={'roi_avg': 'ROI (%)', 'scenario': 'Skenario'},
+        color='roi_avg',
+        color_continuous_scale='Greens'
+    )
+    fig2.update_layout(showlegend=False)
+    st.plotly_chart(fig2, use_container_width=True)
     
     # Profit comparison
     fig3 = px.bar(
-        df_viz,
-        x='scenario',
-        y='profit_avg',
-        title='Perbandingan Profit Rata-rata',
-        labels={'profit_avg': 'Profit (Rp)', 'scenario': 'Skenario'},
-        color='profit_avg',
-        color_continuous_scale='Blues'
+    df_viz,
+    x='scenario',
+    y='profit_avg',
+    title='Perbandingan Profit Rata-rata',
+    labels={'profit_avg': 'Profit (Rp)', 'scenario': 'Skenario'},
+    color='profit_avg',
+    color_continuous_scale='Blues'
     )
     st.plotly_chart(fig3, use_container_width=True)
 
@@ -677,17 +677,17 @@ with tab3:
     
     # Select scenario
     scenario_options = {
-        "Organik + Terbuka": "Organik_Terbuka",
-        "Organik + Greenhouse": "Organik_Greenhouse",
-        "Kimia + Terbuka": "Kimia_Terbuka",
-        "Kimia + Greenhouse": "Kimia_Greenhouse",
-        "Campuran + Terbuka": "Campuran_Terbuka",
-        "Campuran + Greenhouse": "Campuran_Greenhouse"
+    "Organik + Terbuka": "Organik_Terbuka",
+    "Organik + Greenhouse": "Organik_Greenhouse",
+    "Kimia + Terbuka": "Kimia_Terbuka",
+    "Kimia + Greenhouse": "Kimia_Greenhouse",
+    "Campuran + Terbuka": "Campuran_Terbuka",
+    "Campuran + Greenhouse": "Campuran_Greenhouse"
     }
     
     selected_scenario = st.selectbox(
-        "Pilih Skenario",
-        list(scenario_options.keys())
+    "Pilih Skenario",
+    list(scenario_options.keys())
     )
     
     scenario_key = scenario_options[selected_scenario]
@@ -696,184 +696,184 @@ with tab3:
     result = RABCalculatorService.calculate_rab(scenario_key, luas_ha)
     
     if result:
-        # Display scenario info
-        st.markdown(f"""
-        <div class="scenario-card">
-            <h3>{result['scenario']}</h3>
-            <p>{result['deskripsi']}</p>
-            <p><strong>Luas Lahan:</strong> {result['luas_ha']} Ha</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Summary metrics
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric(
-                "Total Investasi",
-                f"Rp {result['total_biaya']:,.0f}"
-            )
-        
-        with col2:
-            st.metric(
-                "Pendapatan (Avg)",
-                f"Rp {result['proyeksi']['pendapatan_avg']:,.0f}"
-            )
-        
-        with col3:
-            st.metric(
-                "Profit (Avg)",
-                f"Rp {result['proyeksi']['profit_avg']:,.0f}",
-                delta=f"{result['proyeksi']['roi_avg_persen']:.1f}% ROI"
-            )
-        
-        with col4:
-            st.metric(
-                "Payback Period",
-                f"{result['proyeksi']['payback_bulan']} bulan"
-            )
-        
-        st.markdown("---")
-        
-        # Breakdown by category
-        st.subheader("📋 Breakdown Biaya per Kategori")
-        
-        breakdown_data = []
-        for kategori, biaya in result['breakdown'].items():
-            persen = (biaya / result['total_biaya']) * 100
-            breakdown_data.append({
-                'Kategori': kategori,
-                'Biaya': f"Rp {biaya:,.0f}",
-                '% dari Total': f"{persen:.1f}%"
-            })
-        
-        df_breakdown = pd.DataFrame(breakdown_data)
-        st.dataframe(df_breakdown, use_container_width=True, hide_index=True)
-        
-        # Pie chart
-        fig_pie = px.pie(
-            values=list(result['breakdown'].values()),
-            names=list(result['breakdown'].keys()),
-            title='Distribusi Biaya'
+    # Display scenario info
+    st.markdown(f"""
+    <div class="scenario-card">
+        <h3>{result['scenario']}</h3>
+        <p>{result['deskripsi']}</p>
+        <p><strong>Luas Lahan:</strong> {result['luas_ha']} Ha</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Summary metrics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric(
+            "Total Investasi",
+            f"Rp {result['total_biaya']:,.0f}"
         )
-        st.plotly_chart(fig_pie, use_container_width=True)
-        
-        st.markdown("---")
-        
-        # Detailed items - EDITABLE
-        st.subheader("📝 Rincian Item Detail (Editable)")
-        
-        st.info("💡 **Tip:** Klik pada cell Harga atau Volume untuk mengedit. Total akan otomatis terupdate!")
-        
-        # Prepare editable data
-        items_edit_data = []
-        for idx, item in enumerate(result['items']):
-            items_edit_data.append({
-                'No': idx + 1,
-                'Kategori': item['kategori'],
-                'Item': item['item'],
-                'Volume': item['volume'] * luas_ha,
-                'Satuan': item['satuan'],
-                'Harga': item['harga'],
-                'Total': item['volume'] * item['harga'] * luas_ha
-            })
-        
-        df_items_edit = pd.DataFrame(items_edit_data)
-        
-        # Editable dataframe
-        edited_df = st.data_editor(
-            df_items_edit,
-            column_config={
-                "No": st.column_config.NumberColumn("No", width="small", disabled=True),
-                "Kategori": st.column_config.TextColumn("Kategori", width="medium", disabled=True),
-                "Item": st.column_config.TextColumn("Item", width="large", disabled=True),
-                "Volume": st.column_config.NumberColumn(
-                    "Volume",
-                    width="medium",
-                    min_value=0,
-                    format="%.2f",
-                    help="Edit volume sesuai kebutuhan"
-                ),
-                "Satuan": st.column_config.TextColumn("Satuan", width="small", disabled=True),
-                "Harga": st.column_config.NumberColumn(
-                    "Harga Satuan (Rp)",
-                    width="medium",
-                    min_value=0,
-                    format="%,.0f",
-                    help="Edit harga sesuai harga pasar"
-                ),
-                "Total": st.column_config.NumberColumn(
-                    "Total (Rp)",
-                    width="large",
-                    disabled=True,
-                    format="%,.0f"
-                )
-            },
-            hide_index=True,
-            use_container_width=True,
-            num_rows="fixed"
+    
+    with col2:
+        st.metric(
+            "Pendapatan (Avg)",
+            f"Rp {result['proyeksi']['pendapatan_avg']:,.0f}"
         )
-        
-        # Recalculate totals based on edited values
-        edited_df['Total'] = edited_df['Volume'] * edited_df['Harga']
-        
-        # Calculate new totals
-        new_total_biaya = edited_df['Total'].sum()
-        original_total = result['total_biaya']
-        difference = new_total_biaya - original_total
-        difference_pct = (difference / original_total) * 100 if original_total > 0 else 0
-        
-        # Display updated totals
-        st.markdown("---")
-        st.subheader("💰 Total Biaya (Updated)")
-        
-        col_t1, col_t2, col_t3 = st.columns(3)
-        
-        with col_t1:
-            st.metric(
-                "Total Biaya Original",
-                f"Rp {original_total:,.0f}"
+    
+    with col3:
+        st.metric(
+            "Profit (Avg)",
+            f"Rp {result['proyeksi']['profit_avg']:,.0f}",
+            delta=f"{result['proyeksi']['roi_avg_persen']:.1f}% ROI"
+        )
+    
+    with col4:
+        st.metric(
+            "Payback Period",
+            f"{result['proyeksi']['payback_bulan']} bulan"
+        )
+    
+    st.markdown("---")
+    
+    # Breakdown by category
+    st.subheader("📋 Breakdown Biaya per Kategori")
+    
+    breakdown_data = []
+    for kategori, biaya in result['breakdown'].items():
+        persen = (biaya / result['total_biaya']) * 100
+        breakdown_data.append({
+            'Kategori': kategori,
+            'Biaya': f"Rp {biaya:,.0f}",
+            '% dari Total': f"{persen:.1f}%"
+        })
+    
+    df_breakdown = pd.DataFrame(breakdown_data)
+    st.dataframe(df_breakdown, use_container_width=True, hide_index=True)
+    
+    # Pie chart
+    fig_pie = px.pie(
+        values=list(result['breakdown'].values()),
+        names=list(result['breakdown'].keys()),
+        title='Distribusi Biaya'
+    )
+    st.plotly_chart(fig_pie, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Detailed items - EDITABLE
+    st.subheader("📝 Rincian Item Detail (Editable)")
+    
+    st.info("💡 **Tip:** Klik pada cell Harga atau Volume untuk mengedit. Total akan otomatis terupdate!")
+    
+    # Prepare editable data
+    items_edit_data = []
+    for idx, item in enumerate(result['items']):
+        items_edit_data.append({
+            'No': idx + 1,
+            'Kategori': item['kategori'],
+            'Item': item['item'],
+            'Volume': item['volume'] * luas_ha,
+            'Satuan': item['satuan'],
+            'Harga': item['harga'],
+            'Total': item['volume'] * item['harga'] * luas_ha
+        })
+    
+    df_items_edit = pd.DataFrame(items_edit_data)
+    
+    # Editable dataframe
+    edited_df = st.data_editor(
+        df_items_edit,
+        column_config={
+            "No": st.column_config.NumberColumn("No", width="small", disabled=True),
+            "Kategori": st.column_config.TextColumn("Kategori", width="medium", disabled=True),
+            "Item": st.column_config.TextColumn("Item", width="large", disabled=True),
+            "Volume": st.column_config.NumberColumn(
+                "Volume",
+                width="medium",
+                min_value=0,
+                format="%.2f",
+                help="Edit volume sesuai kebutuhan"
+            ),
+            "Satuan": st.column_config.TextColumn("Satuan", width="small", disabled=True),
+            "Harga": st.column_config.NumberColumn(
+                "Harga Satuan (Rp)",
+                width="medium",
+                min_value=0,
+                format="%,.0f",
+                help="Edit harga sesuai harga pasar"
+            ),
+            "Total": st.column_config.NumberColumn(
+                "Total (Rp)",
+                width="large",
+                disabled=True,
+                format="%,.0f"
             )
-        
-        with col_t2:
-            st.metric(
-                "Total Biaya Edited",
-                f"Rp {new_total_biaya:,.0f}",
-                delta=f"Rp {difference:,.0f}" if difference != 0 else None
-            )
-        
-        with col_t3:
-            if difference != 0:
-                st.metric(
-                    "Perubahan",
-                    f"{difference_pct:+.1f}%",
-                    delta=f"{'Hemat' if difference < 0 else 'Tambah'} Rp {abs(difference):,.0f}"
-                )
-            else:
-                st.metric("Perubahan", "0%")
-        
-        # Updated breakdown by category
+        },
+        hide_index=True,
+        use_container_width=True,
+        num_rows="fixed"
+    )
+    
+    # Recalculate totals based on edited values
+    edited_df['Total'] = edited_df['Volume'] * edited_df['Harga']
+    
+    # Calculate new totals
+    new_total_biaya = edited_df['Total'].sum()
+    original_total = result['total_biaya']
+    difference = new_total_biaya - original_total
+    difference_pct = (difference / original_total) * 100 if original_total > 0 else 0
+    
+    # Display updated totals
+    st.markdown("---")
+    st.subheader("💰 Total Biaya (Updated)")
+    
+    col_t1, col_t2, col_t3 = st.columns(3)
+    
+    with col_t1:
+        st.metric(
+            "Total Biaya Original",
+            f"Rp {original_total:,.0f}"
+        )
+    
+    with col_t2:
+        st.metric(
+            "Total Biaya Edited",
+            f"Rp {new_total_biaya:,.0f}",
+            delta=f"Rp {difference:,.0f}" if difference != 0 else None
+        )
+    
+    with col_t3:
         if difference != 0:
-            st.markdown("---")
-            st.subheader("📊 Breakdown Updated (per Kategori)")
-            
-            # Group by category
-            category_totals = edited_df.groupby('Kategori')['Total'].sum().reset_index()
-            category_totals.columns = ['Kategori', 'Total']
-            category_totals['Persentase'] = (category_totals['Total'] / new_total_biaya * 100).round(1)
-            category_totals['Total'] = category_totals['Total'].apply(lambda x: f"Rp {x:,.0f}")
-            category_totals['Persentase'] = category_totals['Persentase'].apply(lambda x: f"{x}%")
-            
-            st.dataframe(category_totals, use_container_width=True, hide_index=True)
+            st.metric(
+                "Perubahan",
+                f"{difference_pct:+.1f}%",
+                delta=f"{'Hemat' if difference < 0 else 'Tambah'} Rp {abs(difference):,.0f}"
+            )
+        else:
+            st.metric("Perubahan", "0%")
+    
+    # Updated breakdown by category
+    if difference != 0:
+        st.markdown("---")
+        st.subheader("📊 Breakdown Updated (per Kategori)")
         
-        # Download button with edited data
-        csv_edited = edited_df.to_csv(index=False)
-        st.download_button(
-            label="📥 Download RAB Edited (CSV)",
-            data=csv_edited,
-            file_name=f"RAB_{scenario_key}_{luas_ha}ha_edited.csv",
-            mime="text/csv"
-        )
+        # Group by category
+        category_totals = edited_df.groupby('Kategori')['Total'].sum().reset_index()
+        category_totals.columns = ['Kategori', 'Total']
+        category_totals['Persentase'] = (category_totals['Total'] / new_total_biaya * 100).round(1)
+        category_totals['Total'] = category_totals['Total'].apply(lambda x: f"Rp {x:,.0f}")
+        category_totals['Persentase'] = category_totals['Persentase'].apply(lambda x: f"{x}%")
+        
+        st.dataframe(category_totals, use_container_width=True, hide_index=True)
+    
+    # Download button with edited data
+    csv_edited = edited_df.to_csv(index=False)
+    st.download_button(
+        label="📥 Download RAB Edited (CSV)",
+        data=csv_edited,
+        file_name=f"RAB_{scenario_key}_{luas_ha}ha_edited.csv",
+        mime="text/csv"
+    )
 
 
 
@@ -882,76 +882,76 @@ with tab4:
     
     # Select scenario for analysis
     selected_scenario_roi = st.selectbox(
-        "Pilih Skenario untuk Analisis",
-        list(scenario_options.keys()),
-        key="roi_scenario"
+    "Pilih Skenario untuk Analisis",
+    list(scenario_options.keys()),
+    key="roi_scenario"
     )
     
     scenario_key_roi = scenario_options[selected_scenario_roi]
     result_roi = RABCalculatorService.calculate_rab(scenario_key_roi, luas_ha)
     
     if result_roi:
-        st.subheader("💰 Proyeksi Pendapatan & Profit")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown(f"""
-            **Skenario Minimum:**
-            - Yield: {result_roi['proyeksi']['yield_min_kg']:,.0f} kg
-            - Pendapatan: Rp {result_roi['proyeksi']['pendapatan_min']:,.0f}
-            - Profit: Rp {result_roi['proyeksi']['profit_min']:,.0f}
-            - ROI: {result_roi['proyeksi']['roi_min_persen']:.1f}%
-            """)
-        
-        with col2:
-            st.markdown(f"""
-            **Skenario Maksimum:**
-            - Yield: {result_roi['proyeksi']['yield_max_kg']:,.0f} kg
-            - Pendapatan: Rp {result_roi['proyeksi']['pendapatan_max']:,.0f}
-            - Profit: Rp {result_roi['proyeksi']['profit_max']:,.0f}
-            - ROI: {result_roi['proyeksi']['roi_max_persen']:.1f}%
-            """)
-        
-        st.markdown("---")
-        
-        # ROI Range visualization
-        st.subheader("📊 Range ROI")
-        
-        fig_roi = go.Figure()
-        
-        fig_roi.add_trace(go.Bar(
-            name='ROI Range',
-            x=[result_roi['scenario']],
-            y=[result_roi['proyeksi']['roi_avg_persen']],
-            error_y=dict(
-                type='data',
-                symmetric=False,
-                array=[result_roi['proyeksi']['roi_max_persen'] - result_roi['proyeksi']['roi_avg_persen']],
-                arrayminus=[result_roi['proyeksi']['roi_avg_persen'] - result_roi['proyeksi']['roi_min_persen']]
-            ),
-            marker_color='#FF6B6B'
-        ))
-        
-        fig_roi.update_layout(
-            title='ROI Range (Min - Avg - Max)',
-            yaxis_title='ROI (%)',
-            showlegend=False
-        )
-        
-        st.plotly_chart(fig_roi, use_container_width=True)
-        
-        st.markdown("---")
-        
-        # Break-even analysis
-        st.subheader("⚖️ Break-Even Analysis")
-        
-        break_even_kg = result_roi['total_biaya'] / ((result_roi['proyeksi']['pendapatan_avg'] / ((result_roi['proyeksi']['yield_min_kg'] + result_roi['proyeksi']['yield_max_kg']) / 2)))
-        
-        st.info(f"""
-        **Break-Even Point:**
-        - Produksi minimum: **{break_even_kg:,.0f} kg**
-        - Dengan harga rata-rata saat ini
-        - Di bawah ini = rugi, di atas ini = untung
+    st.subheader("💰 Proyeksi Pendapatan & Profit")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown(f"""
+        **Skenario Minimum:**
+        - Yield: {result_roi['proyeksi']['yield_min_kg']:,.0f} kg
+        - Pendapatan: Rp {result_roi['proyeksi']['pendapatan_min']:,.0f}
+        - Profit: Rp {result_roi['proyeksi']['profit_min']:,.0f}
+        - ROI: {result_roi['proyeksi']['roi_min_persen']:.1f}%
         """)
+    
+    with col2:
+        st.markdown(f"""
+        **Skenario Maksimum:**
+        - Yield: {result_roi['proyeksi']['yield_max_kg']:,.0f} kg
+        - Pendapatan: Rp {result_roi['proyeksi']['pendapatan_max']:,.0f}
+        - Profit: Rp {result_roi['proyeksi']['profit_max']:,.0f}
+        - ROI: {result_roi['proyeksi']['roi_max_persen']:.1f}%
+        """)
+    
+    st.markdown("---")
+    
+    # ROI Range visualization
+    st.subheader("📊 Range ROI")
+    
+    fig_roi = go.Figure()
+    
+    fig_roi.add_trace(go.Bar(
+        name='ROI Range',
+        x=[result_roi['scenario']],
+        y=[result_roi['proyeksi']['roi_avg_persen']],
+        error_y=dict(
+            type='data',
+            symmetric=False,
+            array=[result_roi['proyeksi']['roi_max_persen'] - result_roi['proyeksi']['roi_avg_persen']],
+            arrayminus=[result_roi['proyeksi']['roi_avg_persen'] - result_roi['proyeksi']['roi_min_persen']]
+        ),
+        marker_color='#FF6B6B'
+    ))
+    
+    fig_roi.update_layout(
+        title='ROI Range (Min - Avg - Max)',
+        yaxis_title='ROI (%)',
+        showlegend=False
+    )
+    
+    st.plotly_chart(fig_roi, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Break-even analysis
+    st.subheader("⚖️ Break-Even Analysis")
+    
+    break_even_kg = result_roi['total_biaya'] / ((result_roi['proyeksi']['pendapatan_avg'] / ((result_roi['proyeksi']['yield_min_kg'] + result_roi['proyeksi']['yield_max_kg']) / 2)))
+    
+    st.info(f"""
+    **Break-Even Point:**
+    - Produksi minimum: **{break_even_kg:,.0f} kg**
+    - Dengan harga rata-rata saat ini
+    - Di bawah ini = rugi, di atas ini = untung
+    """)
 

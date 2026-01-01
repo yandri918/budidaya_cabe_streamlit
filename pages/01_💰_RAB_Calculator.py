@@ -153,6 +153,71 @@ with tab1:
             help="Biasanya 2 baris untuk bedengan 1-1.2m"
         )
     
+    # Intercropping section
+    st.markdown("---")
+    st.subheader("🌾 Tumpang Sari (Opsional)")
+    
+    use_intercrop = st.checkbox(
+        "Gunakan Tumpang Sari",
+        help="Tanam tanaman sela di tengah baris untuk optimasi lahan"
+    )
+    
+    intercrop_type = None
+    intercrop_spacing = 0
+    intercrop_price = 0
+    
+    if use_intercrop:
+        col_ic1, col_ic2 = st.columns(2)
+        
+        with col_ic1:
+            intercrop_type = st.selectbox(
+                "Pilih Tanaman Sela",
+                ["Kobis", "Bawang Daun", "Jagung Manis", "Tomat"],
+                help="Tanaman yang ditanam di tengah baris cabai"
+            )
+            
+            # Default spacing based on crop type
+            default_spacing = {
+                "Kobis": 40,
+                "Bawang Daun": 20,
+                "Jagung Manis": 30,
+                "Tomat": 50
+            }
+            
+            intercrop_spacing = st.number_input(
+                f"Jarak Tanam {intercrop_type} (cm)",
+                min_value=15,
+                max_value=60,
+                value=default_spacing.get(intercrop_type, 30),
+                step=5,
+                help="Jarak antar tanaman sela"
+            )
+        
+        with col_ic2:
+            # Default prices
+            default_prices = {
+                "Kobis": 300,
+                "Bawang Daun": 200,
+                "Jagung Manis": 500,
+                "Tomat": 400
+            }
+            
+            intercrop_price = st.number_input(
+                f"Harga Bibit {intercrop_type} (Rp/batang)",
+                min_value=100,
+                max_value=2000,
+                value=default_prices.get(intercrop_type, 300),
+                step=50
+            )
+            
+            st.info(f"""
+            **Info {intercrop_type}:**
+            - Umur panen: {"60-90 hari" if intercrop_type == "Kobis" else "45-60 hari" if intercrop_type == "Bawang Daun" else "70-90 hari" if intercrop_type == "Jagung Manis" else "80-100 hari"}
+            - Cocok untuk: Fase vegetatif cabai
+            - Manfaat: Optimasi lahan, tambahan income
+            """)
+    
+    
     if st.button("🧮 Hitung", type="primary"):
         st.markdown("---")
         st.subheader("📊 Hasil Perhitungan")
@@ -293,17 +358,89 @@ with tab1:
             st.success(f"Total Biaya Mulsa: **Rp {total_biaya_mulsa:,}**")
             st.caption(f"{jumlah_roll_mulsa} roll × Rp {harga_mulsa_per_roll:,}")
         
+        # Intercrop calculations
+        if use_intercrop and intercrop_type:
+            st.markdown("---")
+            st.subheader(f"🌾 Tumpang Sari: {intercrop_type}")
+            
+            # Calculate intercrop seedlings
+            # Intercrop ditanam di tengah baris (between rows)
+            intercrop_spacing_m = intercrop_spacing / 100
+            
+            # Number of intercrop plants per bed length
+            intercrop_per_bed = int(panjang_bedengan / intercrop_spacing_m)
+            
+            # Total intercrop plants (1 row per bed, di tengah)
+            total_intercrop = intercrop_per_bed * jumlah_bedengan
+            
+            # With buffer
+            intercrop_dengan_cadangan = int(total_intercrop * 1.15)
+            total_biaya_intercrop = intercrop_dengan_cadangan * intercrop_price
+            
+            col_ic1, col_ic2, col_ic3 = st.columns(3)
+            
+            with col_ic1:
+                st.metric(
+                    f"Bibit {intercrop_type}",
+                    f"{total_intercrop:,} batang",
+                    help="Tanaman sela di tengah baris"
+                )
+                st.caption(f"Cadangan 15%: {intercrop_dengan_cadangan:,} batang")
+            
+            with col_ic2:
+                st.metric(
+                    "Jarak Tanam",
+                    f"{intercrop_spacing} cm",
+                    help=f"Jarak antar {intercrop_type}"
+                )
+                st.caption(f"{intercrop_per_bed} tanaman/bedengan")
+            
+            with col_ic3:
+                st.metric(
+                    f"Biaya Bibit {intercrop_type}",
+                    f"Rp {total_biaya_intercrop:,}"
+                )
+                st.caption(f"{intercrop_dengan_cadangan:,} × Rp {intercrop_price:,}")
+            
+            st.info(f"""
+            **💡 Manfaat Tumpang Sari {intercrop_type}:**
+            - Optimasi penggunaan lahan
+            - Tambahan pendapatan saat fase vegetatif cabai
+            - Mengurangi gulma
+            - Diversifikasi risiko
+            
+            **⚠️ Perhatian:**
+            - Jangan sampai menaungi cabai
+            - Panen {intercrop_type} sebelum cabai berbuah
+            - Sesuaikan pemupukan untuk 2 tanaman
+            """)
+
+        
         # Total
         total_biaya_teknis = total_biaya_bibit + total_biaya_mulsa
         
-        st.markdown("---")
-        st.success(f"""
-        ### 💵 Total Biaya (Bibit + Mulsa)
-        **Rp {total_biaya_teknis:,}**
+        if use_intercrop and intercrop_type:
+            total_biaya_teknis += total_biaya_intercrop
         
-        - Bibit: Rp {total_biaya_bibit:,}
-        - Mulsa: Rp {total_biaya_mulsa:,}
-        """)
+        st.markdown("---")
+        
+        if use_intercrop and intercrop_type:
+            st.success(f"""
+            ### 💵 Total Biaya (Bibit Cabai + {intercrop_type} + Mulsa)
+            **Rp {total_biaya_teknis:,}**
+            
+            - Bibit Cabai: Rp {total_biaya_bibit:,}
+            - Bibit {intercrop_type}: Rp {total_biaya_intercrop:,}
+            - Mulsa: Rp {total_biaya_mulsa:,}
+            """)
+        else:
+            st.success(f"""
+            ### 💵 Total Biaya (Bibit + Mulsa)
+            **Rp {total_biaya_teknis:,}**
+            
+            - Bibit: Rp {total_biaya_bibit:,}
+            - Mulsa: Rp {total_biaya_mulsa:,}
+            """)
         
         # Download
         csv_detail = df_detail.to_csv(index=False)

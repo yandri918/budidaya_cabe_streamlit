@@ -83,8 +83,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 ])
 
 with tab1:
-    st.header("🧮 Kalkulator Teknis")
-    st.markdown("**Hitung kebutuhan bibit, jarak tanam, dan panjang mulsa**")
+    st.header("📊 Perbandingan 6 Skenario")
     
     # Get comparison data
     comparisons = RABCalculatorService.compare_scenarios(luas_ha)
@@ -152,7 +151,7 @@ with tab1:
     )
     st.plotly_chart(fig3, use_container_width=True)
 
-with tab3:
+with tab2:
     st.header("💵 Hitung RAB Detail")
     
     # Select scenario
@@ -266,7 +265,7 @@ with tab3:
             mime="text/csv"
         )
 
-with tab4:
+with tab3:
     st.header("📈 Analisis ROI & Sensitivitas")
     
     # Select scenario for analysis
@@ -344,8 +343,9 @@ with tab4:
         - Di bawah ini = rugi, di atas ini = untung
         """)
 
-with tab2:
-    st.header("📊 Perbandingan 6 Skenario")
+with tab4:
+    st.header("🧮 Kalkulator Teknis")
+    st.markdown("**Hitung kebutuhan bibit, jarak tanam, dan panjang mulsa**")
     
     st.markdown("---")
     

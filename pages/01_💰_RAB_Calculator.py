@@ -483,29 +483,118 @@ with tab3:
         
         st.markdown("---")
         
-        # Detailed items
-        st.subheader("📝 Rincian Item Detail")
+        # Detailed items - EDITABLE
+        st.subheader("📝 Rincian Item Detail (Editable)")
         
-        items_data = []
-        for item in result['items']:
-            total = item['volume'] * item['harga'] * luas_ha
-            items_data.append({
+        st.info("💡 **Tip:** Klik pada cell Harga atau Volume untuk mengedit. Total akan otomatis terupdate!")
+        
+        # Prepare editable data
+        items_edit_data = []
+        for idx, item in enumerate(result['items']):
+            items_edit_data.append({
+                'No': idx + 1,
                 'Kategori': item['kategori'],
                 'Item': item['item'],
-                'Volume': f"{item['volume'] * luas_ha:.0f} {item['satuan']}",
-                'Harga Satuan': f"Rp {item['harga']:,.0f}",
-                'Total': f"Rp {total:,.0f}"
+                'Volume': item['volume'] * luas_ha,
+                'Satuan': item['satuan'],
+                'Harga': item['harga'],
+                'Total': item['volume'] * item['harga'] * luas_ha
             })
         
-        df_items = pd.DataFrame(items_data)
-        st.dataframe(df_items, use_container_width=True, hide_index=True)
+        df_items_edit = pd.DataFrame(items_edit_data)
         
-        # Download button
-        csv = df_items.to_csv(index=False)
+        # Editable dataframe
+        edited_df = st.data_editor(
+            df_items_edit,
+            column_config={
+                "No": st.column_config.NumberColumn("No", width="small", disabled=True),
+                "Kategori": st.column_config.TextColumn("Kategori", width="medium", disabled=True),
+                "Item": st.column_config.TextColumn("Item", width="large", disabled=True),
+                "Volume": st.column_config.NumberColumn(
+                    "Volume",
+                    width="medium",
+                    min_value=0,
+                    format="%.2f",
+                    help="Edit volume sesuai kebutuhan"
+                ),
+                "Satuan": st.column_config.TextColumn("Satuan", width="small", disabled=True),
+                "Harga": st.column_config.NumberColumn(
+                    "Harga Satuan (Rp)",
+                    width="medium",
+                    min_value=0,
+                    format="Rp %,.0f",
+                    help="Edit harga sesuai harga pasar"
+                ),
+                "Total": st.column_config.NumberColumn(
+                    "Total (Rp)",
+                    width="large",
+                    disabled=True,
+                    format="Rp %,.0f"
+                )
+            },
+            hide_index=True,
+            use_container_width=True,
+            num_rows="fixed"
+        )
+        
+        # Recalculate totals based on edited values
+        edited_df['Total'] = edited_df['Volume'] * edited_df['Harga']
+        
+        # Calculate new totals
+        new_total_biaya = edited_df['Total'].sum()
+        original_total = result['total_biaya']
+        difference = new_total_biaya - original_total
+        difference_pct = (difference / original_total) * 100 if original_total > 0 else 0
+        
+        # Display updated totals
+        st.markdown("---")
+        st.subheader("💰 Total Biaya (Updated)")
+        
+        col_t1, col_t2, col_t3 = st.columns(3)
+        
+        with col_t1:
+            st.metric(
+                "Total Biaya Original",
+                f"Rp {original_total:,.0f}"
+            )
+        
+        with col_t2:
+            st.metric(
+                "Total Biaya Edited",
+                f"Rp {new_total_biaya:,.0f}",
+                delta=f"Rp {difference:,.0f}" if difference != 0 else None
+            )
+        
+        with col_t3:
+            if difference != 0:
+                st.metric(
+                    "Perubahan",
+                    f"{difference_pct:+.1f}%",
+                    delta=f"{'Hemat' if difference < 0 else 'Tambah'} Rp {abs(difference):,.0f}"
+                )
+            else:
+                st.metric("Perubahan", "0%")
+        
+        # Updated breakdown by category
+        if difference != 0:
+            st.markdown("---")
+            st.subheader("📊 Breakdown Updated (per Kategori)")
+            
+            # Group by category
+            category_totals = edited_df.groupby('Kategori')['Total'].sum().reset_index()
+            category_totals.columns = ['Kategori', 'Total']
+            category_totals['Persentase'] = (category_totals['Total'] / new_total_biaya * 100).round(1)
+            category_totals['Total'] = category_totals['Total'].apply(lambda x: f"Rp {x:,.0f}")
+            category_totals['Persentase'] = category_totals['Persentase'].apply(lambda x: f"{x}%")
+            
+            st.dataframe(category_totals, use_container_width=True, hide_index=True)
+        
+        # Download button with edited data
+        csv_edited = edited_df.to_csv(index=False)
         st.download_button(
-            label="📥 Download RAB (CSV)",
-            data=csv,
-            file_name=f"RAB_{scenario_key}_{luas_ha}ha.csv",
+            label="📥 Download RAB Edited (CSV)",
+            data=csv_edited,
+            file_name=f"RAB_{scenario_key}_{luas_ha}ha_edited.csv",
             mime="text/csv"
         )
 

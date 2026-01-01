@@ -75,10 +75,11 @@ with st.sidebar:
     """)
 
 # Tabs
-tab1, tab2, tab3 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "📊 Perbandingan Skenario",
     "💵 Hitung RAB Detail",
-    "📈 Analisis ROI"
+    "📈 Analisis ROI",
+    "🧮 Kalkulator Teknis"
 ])
 
 with tab1:
@@ -341,6 +342,238 @@ with tab3:
         - Dengan harga rata-rata saat ini
         - Di bawah ini = rugi, di atas ini = untung
         """)
+
+with tab4:
+    st.header("🧮 Kalkulator Teknis")
+    st.markdown("**Hitung kebutuhan bibit, jarak tanam, dan panjang mulsa**")
+    
+    st.markdown("---")
+    
+    # Input section
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("📏 Input Lahan")
+        
+        luas_m2 = st.number_input(
+            "Luas Lahan (m²)",
+            min_value=100,
+            max_value=1000000,
+            value=10000,
+            step=100,
+            help="1 Ha = 10,000 m²"
+        )
+        
+        luas_ha_calc = luas_m2 / 10000
+        st.info(f"= {luas_ha_calc:.2f} Ha")
+        
+        panjang_bedengan = st.number_input(
+            "Panjang Bedengan (m)",
+            min_value=1,
+            max_value=1000,
+            value=50,
+            step=1
+        )
+        
+        lebar_bedengan = st.number_input(
+            "Lebar Bedengan (m)",
+            min_value=0.5,
+            max_value=5.0,
+            value=1.2,
+            step=0.1,
+            help="Standar: 1.0 - 1.2 m"
+        )
+    
+    with col2:
+        st.subheader("🌱 Jarak Tanam")
+        
+        jarak_dalam_baris = st.number_input(
+            "Jarak Dalam Baris (cm)",
+            min_value=20,
+            max_value=100,
+            value=60,
+            step=5,
+            help="Jarak antar tanaman dalam 1 baris"
+        )
+        
+        jarak_antar_baris = st.number_input(
+            "Jarak Antar Baris (cm)",
+            min_value=20,
+            max_value=100,
+            value=70,
+            step=5,
+            help="Jarak antar baris tanaman"
+        )
+        
+        jumlah_baris = st.number_input(
+            "Jumlah Baris per Bedengan",
+            min_value=1,
+            max_value=5,
+            value=2,
+            step=1,
+            help="Biasanya 2 baris untuk bedengan 1-1.2m"
+        )
+    
+    if st.button("🧮 Hitung", type="primary"):
+        st.markdown("---")
+        st.subheader("📊 Hasil Perhitungan")
+        
+        # Calculate seedling count
+        jarak_dalam_m = jarak_dalam_baris / 100
+        jarak_antar_m = jarak_antar_baris / 100
+        
+        # Tanaman per bedengan
+        tanaman_per_baris = int(panjang_bedengan / jarak_dalam_m)
+        tanaman_per_bedengan = tanaman_per_baris * jumlah_baris
+        
+        # Total bedengan
+        jarak_antar_bedengan = 0.5  # meter (standar)
+        lebar_total_per_bedengan = lebar_bedengan + jarak_antar_bedengan
+        
+        jumlah_bedengan = int(luas_m2 / (panjang_bedengan * lebar_total_per_bedengan))
+        
+        # Total tanaman
+        total_tanaman = tanaman_per_bedengan * jumlah_bedengan
+        
+        # Populasi per ha
+        populasi_per_ha = int((10000 / (jarak_dalam_m * jarak_antar_m)))
+        
+        # Mulsa calculation
+        panjang_mulsa_per_bedengan = panjang_bedengan + 0.5  # Extra 0.5m
+        total_panjang_mulsa = panjang_mulsa_per_bedengan * jumlah_bedengan
+        
+        # Mulsa in rolls (assuming 200m per roll, 1.2m width)
+        lebar_mulsa_standar = 1.2  # meter
+        panjang_per_roll = 200  # meter
+        jumlah_roll_mulsa = int(total_panjang_mulsa / panjang_per_roll) + 1
+        
+        # Display results
+        col_r1, col_r2, col_r3 = st.columns(3)
+        
+        with col_r1:
+            st.metric(
+                "Total Bibit Dibutuhkan",
+                f"{total_tanaman:,} batang",
+                help="Tambah 10-20% untuk cadangan"
+            )
+            st.info(f"**Cadangan 15%:** {int(total_tanaman * 1.15):,} batang")
+        
+        with col_r2:
+            st.metric(
+                "Populasi per Ha",
+                f"{populasi_per_ha:,} tanaman/ha",
+                help="Berdasarkan jarak tanam"
+            )
+            st.info(f"**Jumlah Bedengan:** {jumlah_bedengan} bedengan")
+        
+        with col_r3:
+            st.metric(
+                "Panjang Mulsa",
+                f"{total_panjang_mulsa:,.0f} m",
+                help="Total panjang mulsa yang dibutuhkan"
+            )
+            st.info(f"**Jumlah Roll:** {jumlah_roll_mulsa} roll (@200m)")
+        
+        st.markdown("---")
+        
+        # Detailed breakdown
+        st.subheader("📋 Rincian Detail")
+        
+        detail_data = {
+            "Parameter": [
+                "Luas Lahan",
+                "Panjang Bedengan",
+                "Lebar Bedengan",
+                "Jumlah Bedengan",
+                "Jarak Dalam Baris",
+                "Jarak Antar Baris",
+                "Jumlah Baris per Bedengan",
+                "Tanaman per Baris",
+                "Tanaman per Bedengan",
+                "Total Tanaman",
+                "Populasi per Ha",
+                "Panjang Mulsa Total",
+                "Jumlah Roll Mulsa (200m)"
+            ],
+            "Nilai": [
+                f"{luas_ha_calc:.2f} Ha ({luas_m2:,} m²)",
+                f"{panjang_bedengan} m",
+                f"{lebar_bedengan} m",
+                f"{jumlah_bedengan} bedengan",
+                f"{jarak_dalam_baris} cm",
+                f"{jarak_antar_baris} cm",
+                f"{jumlah_baris} baris",
+                f"{tanaman_per_baris} batang",
+                f"{tanaman_per_bedengan} batang",
+                f"{total_tanaman:,} batang",
+                f"{populasi_per_ha:,} tanaman/ha",
+                f"{total_panjang_mulsa:,.0f} m",
+                f"{jumlah_roll_mulsa} roll"
+            ]
+        }
+        
+        df_detail = pd.DataFrame(detail_data)
+        st.dataframe(df_detail, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # Cost estimation
+        st.subheader("💰 Estimasi Biaya")
+        
+        col_c1, col_c2 = st.columns(2)
+        
+        with col_c1:
+            st.markdown("**Bibit:**")
+            harga_bibit = st.number_input(
+                "Harga per batang (Rp)",
+                min_value=100,
+                max_value=5000,
+                value=500,
+                step=100
+            )
+            
+            bibit_dengan_cadangan = int(total_tanaman * 1.15)
+            total_biaya_bibit = bibit_dengan_cadangan * harga_bibit
+            
+            st.success(f"Total Biaya Bibit: **Rp {total_biaya_bibit:,}**")
+            st.caption(f"{bibit_dengan_cadangan:,} batang × Rp {harga_bibit:,}")
+        
+        with col_c2:
+            st.markdown("**Mulsa:**")
+            harga_mulsa_per_roll = st.number_input(
+                "Harga per roll (Rp)",
+                min_value=50000,
+                max_value=500000,
+                value=180000,
+                step=10000,
+                help="1 roll = 200m × 1.2m"
+            )
+            
+            total_biaya_mulsa = jumlah_roll_mulsa * harga_mulsa_per_roll
+            
+            st.success(f"Total Biaya Mulsa: **Rp {total_biaya_mulsa:,}**")
+            st.caption(f"{jumlah_roll_mulsa} roll × Rp {harga_mulsa_per_roll:,}")
+        
+        # Total
+        total_biaya_teknis = total_biaya_bibit + total_biaya_mulsa
+        
+        st.markdown("---")
+        st.success(f"""
+        ### 💵 Total Biaya (Bibit + Mulsa)
+        **Rp {total_biaya_teknis:,}**
+        
+        - Bibit: Rp {total_biaya_bibit:,}
+        - Mulsa: Rp {total_biaya_mulsa:,}
+        """)
+        
+        # Download
+        csv_detail = df_detail.to_csv(index=False)
+        st.download_button(
+            label="📥 Download Perhitungan (CSV)",
+            data=csv_detail,
+            file_name=f"Perhitungan_Teknis_{luas_ha_calc:.2f}ha.csv",
+            mime="text/csv"
+        )
 
 # Footer
 st.markdown("---")

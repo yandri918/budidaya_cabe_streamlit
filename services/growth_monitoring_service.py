@@ -149,6 +149,8 @@ class GrowthMonitoringService:
         """
         if isinstance(planting_date, str):
             planting_date = datetime.strptime(planting_date, "%Y-%m-%d")
+        elif hasattr(planting_date, 'year'):  # date object
+            planting_date = datetime.combine(planting_date, datetime.min.time())
         
         if current_hst is None:
             current_hst = GrowthMonitoringService.calculate_hst(planting_date)

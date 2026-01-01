@@ -955,6 +955,121 @@ with tab3:
             else:
                 st.metric("Perubahan", "0%")
         
+        # Cost per plant from RAB
+        st.markdown("---")
+        st.subheader("🌱 Biaya per Batang Cabai")
+        
+        # Input jumlah tanaman
+        col_plant1, col_plant2 = st.columns(2)
+        
+        with col_plant1:
+            jumlah_tanaman_rab = st.number_input(
+                "Jumlah Tanaman Cabai",
+                min_value=1,
+                value=16000,
+                step=1000,
+                help="Masukkan jumlah tanaman dari Kalkulator Teknis atau estimasi populasi per ha",
+                key="jumlah_tanaman_for_rab"
+            )
+            
+            st.caption("💡 Tip: Gunakan hasil dari tab 'Kalkulator Teknis'")
+            st.caption(f"Estimasi standar: ~16,000 tanaman/ha untuk jarak 60x70cm")
+        
+        with col_plant2:
+            # Calculate cost per plant
+            biaya_per_batang_original = original_total / jumlah_tanaman_rab if jumlah_tanaman_rab > 0 else 0
+            biaya_per_batang_edited = new_total_biaya / jumlah_tanaman_rab if jumlah_tanaman_rab > 0 else 0
+            
+            st.metric(
+                "Biaya per Batang (Original)",
+                f"Rp {biaya_per_batang_original:,.0f}",
+                help="Total RAB Original / Jumlah Tanaman"
+            )
+            
+            st.metric(
+                "Biaya per Batang (Edited)",
+                f"Rp {biaya_per_batang_edited:,.0f}",
+                delta=f"Rp {biaya_per_batang_edited - biaya_per_batang_original:,.0f}" if difference != 0 else None,
+                help="Total RAB Edited / Jumlah Tanaman"
+            )
+        
+        # Breakdown per batang
+        with st.expander("📊 Breakdown Biaya per Batang"):
+            st.markdown(f"""
+            **Dari Total RAB Edited: Rp {new_total_biaya:,.0f}**
+            
+            Dengan {jumlah_tanaman_rab:,} tanaman:
+            - Biaya per batang: **Rp {biaya_per_batang_edited:,.0f}**
+            
+            **Ini mencakup SEMUA biaya:**
+            - Bibit & Mulsa
+            - Pupuk (seluruh siklus)
+            - Pestisida & fungisida
+            - Tenaga kerja
+            - Peralatan & infrastruktur
+            - Biaya operasional lainnya
+            
+            **Gunakan angka ini untuk:**
+            - Menghitung BEP (Break Even Point)
+            - Estimasi profit per tanaman
+            - Analisis kelayakan usaha
+            - Perbandingan dengan skenario lain
+            """)
+            
+            # Calculate BEP
+            st.markdown("---")
+            st.markdown("**🎯 Break Even Point (BEP):**")
+            
+            # Assume average yield and price
+            yield_per_plant_kg = st.number_input(
+                "Estimasi Hasil per Tanaman (kg)",
+                min_value=0.1,
+                max_value=10.0,
+                value=2.5,
+                step=0.1,
+                help="Rata-rata: 2-3 kg/tanaman untuk cabai merah",
+                key="yield_per_plant"
+            )
+            
+            harga_jual_per_kg = st.number_input(
+                "Harga Jual per kg (Rp)",
+                min_value=1000,
+                max_value=100000,
+                value=30000,
+                step=1000,
+                help="Harga pasar cabai merah",
+                key="harga_jual_kg"
+            )
+            
+            revenue_per_plant = yield_per_plant_kg * harga_jual_per_kg
+            profit_per_plant = revenue_per_plant - biaya_per_batang_edited
+            profit_margin = (profit_per_plant / revenue_per_plant * 100) if revenue_per_plant > 0 else 0
+            
+            col_bep1, col_bep2, col_bep3 = st.columns(3)
+            
+            with col_bep1:
+                st.metric(
+                    "Pendapatan per Tanaman",
+                    f"Rp {revenue_per_plant:,.0f}",
+                    help=f"{yield_per_plant_kg} kg × Rp {harga_jual_per_kg:,}/kg"
+                )
+            
+            with col_bep2:
+                st.metric(
+                    "Profit per Tanaman",
+                    f"Rp {profit_per_plant:,.0f}",
+                    delta=f"{profit_margin:.1f}% margin"
+                )
+            
+            with col_bep3:
+                if profit_per_plant > 0:
+                    st.success(f"✅ UNTUNG Rp {profit_per_plant:,.0f}/tanaman")
+                elif profit_per_plant < 0:
+                    st.error(f"❌ RUGI Rp {abs(profit_per_plant):,.0f}/tanaman")
+                else:
+                    st.warning("⚖️ BREAK EVEN")
+
+        
         # Updated breakdown by category
         if difference != 0:
             st.markdown("---")

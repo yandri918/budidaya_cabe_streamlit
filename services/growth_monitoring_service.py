@@ -19,6 +19,8 @@ class GrowthMonitoringService:
         """Calculate HST (Hari Setelah Tanam) from planting date"""
         if isinstance(planting_date, str):
             planting_date = datetime.strptime(planting_date, "%Y-%m-%d")
+        elif hasattr(planting_date, 'year'):  # date object
+            planting_date = datetime.combine(planting_date, datetime.min.time())
         
         today = datetime.now()
         delta = today - planting_date

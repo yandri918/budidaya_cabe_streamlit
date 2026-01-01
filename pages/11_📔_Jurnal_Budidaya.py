@@ -34,8 +34,11 @@ with tab1:
     with col_info1:
         planting_date = st.date_input(
             "Tanggal Tanam",
-            value=st.session_state.planting_date
+            value=st.session_state.planting_date if isinstance(st.session_state.planting_date, datetime) else st.session_state.planting_date
         )
+        # Convert to datetime for consistency
+        if hasattr(planting_date, 'year') and not isinstance(planting_date, datetime):
+            planting_date = datetime.combine(planting_date, datetime.min.time())
         st.session_state.planting_date = planting_date
     
     with col_info2:
@@ -165,7 +168,7 @@ with tab2:
         df_breakdown['Total Biaya'] = df_breakdown['Total Biaya'].apply(lambda x: f"Rp {x:,.0f}")
         df_breakdown['Rata-rata'] = df_breakdown['Rata-rata'].apply(lambda x: f"Rp {x:,.0f}")
         
-        st.dataframe(df_breakdown, use_container_width=True, hide_index=True)
+        st.dataframe(df_breakdown, width="stretch", hide_index=True)
         
         # Charts
         col_chart1, col_chart2 = st.columns(2)

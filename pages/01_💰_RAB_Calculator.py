@@ -449,13 +449,28 @@ with tab1:
         col_u1, col_u2, col_u3 = st.columns(3)
         
         with col_u1:
-            biaya_per_tanaman_cabai = total_biaya_bibit / total_tanaman if total_tanaman > 0 else 0
+            # Biaya per tanaman dari biaya teknis (bibit + mulsa + intercrop)
+            biaya_per_tanaman_teknis = total_biaya_teknis / total_tanaman if total_tanaman > 0 else 0
             st.metric(
-                "Biaya per Tanaman Cabai",
-                f"Rp {biaya_per_tanaman_cabai:,.0f}",
-                help="Total biaya bibit / jumlah tanaman"
+                "Biaya Teknis per Tanaman",
+                f"Rp {biaya_per_tanaman_teknis:,.0f}",
+                help="Total biaya teknis / jumlah tanaman cabai"
             )
-            st.caption(f"Rp {total_biaya_bibit:,} ÷ {total_tanaman:,} tanaman")
+            st.caption(f"Rp {total_biaya_teknis:,} ÷ {total_tanaman:,} tanaman")
+            
+            # Breakdown
+            with st.expander("📋 Breakdown Biaya per Tanaman"):
+                biaya_bibit_per_tanaman = total_biaya_bibit / total_tanaman if total_tanaman > 0 else 0
+                biaya_mulsa_per_tanaman = total_biaya_mulsa / total_tanaman if total_tanaman > 0 else 0
+                
+                st.write(f"- Bibit: Rp {biaya_bibit_per_tanaman:,.0f}")
+                st.write(f"- Mulsa: Rp {biaya_mulsa_per_tanaman:,.0f}")
+                
+                if use_intercrop and intercrop_type:
+                    biaya_intercrop_per_tanaman = total_biaya_intercrop / total_tanaman if total_tanaman > 0 else 0
+                    st.write(f"- {intercrop_type}: Rp {biaya_intercrop_per_tanaman:,.0f}")
+                
+                st.write(f"**Total: Rp {biaya_per_tanaman_teknis:,.0f}**")
         
         with col_u2:
             biaya_per_m2 = total_biaya_teknis / luas_m2 if luas_m2 > 0 else 0
@@ -508,6 +523,94 @@ with tab1:
                     help="Cabai + Tumpang Sari"
                 )
                 st.caption(f"{total_tanaman:,} + {total_intercrop:,}")
+        
+        # RAB-Based Cost Per Plant Calculator
+        st.markdown("---")
+        st.subheader("💰 Biaya per Tanaman dari Total RAB")
+        
+        st.info("""
+        **📊 True Cost per Plant:**
+        Hitung biaya SEBENARNYA per tanaman dengan memasukkan TOTAL RAB (termasuk semua biaya operasional).
+        Ini memberikan gambaran lengkap biaya per tanaman, bukan hanya biaya bibit.
+        """)
+        
+        col_rab1, col_rab2 = st.columns(2)
+        
+        with col_rab1:
+            # Input total RAB
+            total_rab_input = st.number_input(
+                "Total RAB (Rp)",
+                min_value=0,
+                value=int(total_biaya_teknis),
+                step=1000000,
+                help="Masukkan total RAB dari tab 'Hitung RAB Detail' atau gunakan estimasi dari biaya teknis",
+                key="total_rab_for_calc"
+            )
+            
+            st.caption(f"💡 Estimasi dari biaya teknis: Rp {total_biaya_teknis:,.0f}")
+            
+            # Quick multiplier for estimation
+            multiplier = st.selectbox(
+                "Estimasi Multiplier",
+                [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0],
+                index=2,  # Default 2.0x
+                help="Biaya teknis biasanya 20-30% dari total RAB. Multiplier 2-4x untuk estimasi total RAB."
+            )
+            
+            estimated_total_rab = total_biaya_teknis * multiplier
+            
+            if st.button("📊 Gunakan Estimasi"):
+                total_rab_input = int(estimated_total_rab)
+                st.rerun()
+        
+        with col_rab2:
+            # Calculate cost per plant from RAB
+            biaya_per_tanaman_rab = total_rab_input / total_tanaman if total_tanaman > 0 else 0
+            
+            st.metric(
+                "Biaya per Tanaman (dari RAB)",
+                f"Rp {biaya_per_tanaman_rab:,.0f}",
+                help="Total RAB / Jumlah tanaman"
+            )
+            st.caption(f"Rp {total_rab_input:,.0f} ÷ {total_tanaman:,} tanaman")
+            
+            # Comparison
+            if biaya_per_tanaman_rab > 0:
+                ratio = biaya_per_tanaman_rab / biaya_per_tanaman_teknis if biaya_per_tanaman_teknis > 0 else 0
+                st.info(f"""
+                **Perbandingan:**
+                - Biaya teknis per tanaman: Rp {biaya_per_tanaman_teknis:,.0f}
+                - Biaya RAB per tanaman: Rp {biaya_per_tanaman_rab:,.0f}
+                - Rasio: {ratio:.1f}x
+                
+                RAB mencakup biaya operasional, pupuk, pestisida, tenaga kerja, dll.
+                """)
+        
+        # Breakdown estimation
+        with st.expander("📊 Estimasi Breakdown Biaya per Tanaman (dari RAB)"):
+            st.markdown("""
+            **Asumsi Distribusi Biaya RAB:**
+            - Bibit & Mulsa: 20-30%
+            - Pupuk: 15-20%
+            - Pestisida: 10-15%
+            - Tenaga Kerja: 25-30%
+            - Lain-lain: 10-15%
+            """)
+            
+            # Estimated breakdown
+            bibit_mulsa_pct = 0.25
+            pupuk_pct = 0.175
+            pestisida_pct = 0.125
+            tenaga_kerja_pct = 0.275
+            lainnya_pct = 0.175
+            
+            st.write(f"**Per Tanaman (Estimasi):**")
+            st.write(f"- Bibit & Mulsa: Rp {biaya_per_tanaman_rab * bibit_mulsa_pct:,.0f}")
+            st.write(f"- Pupuk: Rp {biaya_per_tanaman_rab * pupuk_pct:,.0f}")
+            st.write(f"- Pestisida: Rp {biaya_per_tanaman_rab * pestisida_pct:,.0f}")
+            st.write(f"- Tenaga Kerja: Rp {biaya_per_tanaman_rab * tenaga_kerja_pct:,.0f}")
+            st.write(f"- Lain-lain: Rp {biaya_per_tanaman_rab * lainnya_pct:,.0f}")
+            st.write(f"**Total: Rp {biaya_per_tanaman_rab:,.0f}**")
         
         # RAB Integration Summary
         st.markdown("---")

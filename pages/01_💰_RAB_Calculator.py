@@ -902,19 +902,19 @@ with tab3:
                     "Harga Satuan (Rp)",
                     width="medium",
                     min_value=0,
-                    format="%,.0f",
+                    step=100,
                     help="Edit harga sesuai harga pasar"
                 ),
                 "Total": st.column_config.NumberColumn(
                     "Total (Rp)",
                     width="large",
-                    disabled=True,
-                    format="%,.0f"
+                    disabled=True
                 )
             },
             hide_index=True,
             use_container_width=True,
-            num_rows="fixed"
+            num_rows="fixed",
+            key=f"rab_editor_{scenario_key}_{luas_ha}"
         )
         
         # Recalculate totals based on edited values

@@ -659,14 +659,14 @@ with tab3:
                     "Harga Satuan (Rp)",
                     width="medium",
                     min_value=0,
-                    format="Rp %,.0f",
+                    format="%,.0f",
                     help="Edit harga sesuai harga pasar"
                 ),
                 "Total": st.column_config.NumberColumn(
                     "Total (Rp)",
                     width="large",
                     disabled=True,
-                    format="Rp %,.0f"
+                    format="%,.0f"
                 )
             },
             hide_index=True,

@@ -442,6 +442,146 @@ with tab1:
             - Mulsa: Rp {total_biaya_mulsa:,}
             """)
         
+        # Per-unit cost analysis
+        st.markdown("---")
+        st.subheader("📊 Analisis Biaya per Unit")
+        
+        col_u1, col_u2, col_u3 = st.columns(3)
+        
+        with col_u1:
+            biaya_per_tanaman_cabai = total_biaya_bibit / total_tanaman if total_tanaman > 0 else 0
+            st.metric(
+                "Biaya per Tanaman Cabai",
+                f"Rp {biaya_per_tanaman_cabai:,.0f}",
+                help="Total biaya bibit / jumlah tanaman"
+            )
+            st.caption(f"Rp {total_biaya_bibit:,} ÷ {total_tanaman:,} tanaman")
+        
+        with col_u2:
+            biaya_per_m2 = total_biaya_teknis / luas_m2 if luas_m2 > 0 else 0
+            st.metric(
+                "Biaya per m²",
+                f"Rp {biaya_per_m2:,.0f}",
+                help="Total biaya teknis / luas lahan"
+            )
+            st.caption(f"Rp {total_biaya_teknis:,} ÷ {luas_m2:,} m²")
+        
+        with col_u3:
+            biaya_per_ha = total_biaya_teknis / luas_ha_calc if luas_ha_calc > 0 else 0
+            st.metric(
+                "Biaya per Ha",
+                f"Rp {biaya_per_ha:,.0f}",
+                help="Total biaya teknis / luas (ha)"
+            )
+            st.caption(f"Rp {total_biaya_teknis:,} ÷ {luas_ha_calc:.2f} ha")
+        
+        # Intercrop per-unit cost
+        if use_intercrop and intercrop_type:
+            st.markdown("---")
+            st.subheader(f"📊 Analisis Biaya {intercrop_type}")
+            
+            col_ic_u1, col_ic_u2, col_ic_u3 = st.columns(3)
+            
+            with col_ic_u1:
+                biaya_per_tanaman_intercrop = total_biaya_intercrop / total_intercrop if total_intercrop > 0 else 0
+                st.metric(
+                    f"Biaya per Tanaman {intercrop_type}",
+                    f"Rp {biaya_per_tanaman_intercrop:,.0f}",
+                    help=f"Total biaya {intercrop_type} / jumlah tanaman"
+                )
+                st.caption(f"Rp {total_biaya_intercrop:,} ÷ {total_intercrop:,} tanaman")
+            
+            with col_ic_u2:
+                ratio_intercrop_cabai = (total_intercrop / total_tanaman * 100) if total_tanaman > 0 else 0
+                st.metric(
+                    "Rasio Tumpang Sari",
+                    f"{ratio_intercrop_cabai:.1f}%",
+                    help=f"Jumlah {intercrop_type} vs Cabai"
+                )
+                st.caption(f"{total_intercrop:,} {intercrop_type} : {total_tanaman:,} Cabai")
+            
+            with col_ic_u3:
+                total_populasi = total_tanaman + total_intercrop
+                st.metric(
+                    "Total Populasi",
+                    f"{total_populasi:,} tanaman",
+                    help="Cabai + Tumpang Sari"
+                )
+                st.caption(f"{total_tanaman:,} + {total_intercrop:,}")
+        
+        # RAB Integration Summary
+        st.markdown("---")
+        st.subheader("🔗 Integrasi dengan RAB")
+        
+        st.info("""
+        **💡 Cara Menggunakan Hasil Ini di RAB:**
+        
+        1. **Catat Hasil Perhitungan:**
+           - Total bibit cabai: {bibit_cabai:,} batang
+           - Total bibit {intercrop}: {bibit_intercrop:,} batang (jika ada)
+           - Total mulsa: {roll_mulsa} roll
+           - Total biaya teknis: Rp {biaya_teknis:,}
+        
+        2. **Masuk ke Tab "Hitung RAB Detail":**
+           - Pilih skenario budidaya
+           - Edit item "Bibit" dengan jumlah dari perhitungan ini
+           - Edit item "Mulsa" dengan jumlah roll
+           - Tambahkan item baru untuk tumpang sari (jika ada)
+        
+        3. **Manfaat Integrasi:**
+           - Budget lebih akurat (based on actual land size)
+           - Tidak over/under estimate bibit
+           - Optimasi penggunaan mulsa
+           - Include intercropping costs
+        """.format(
+            bibit_cabai=bibit_dengan_cadangan,
+            intercrop=intercrop_type if use_intercrop else "N/A",
+            bibit_intercrop=intercrop_dengan_cadangan if use_intercrop and intercrop_type else 0,
+            roll_mulsa=jumlah_roll_mulsa,
+            biaya_teknis=total_biaya_teknis
+        ))
+        
+        # Quick action buttons
+        col_btn1, col_btn2 = st.columns(2)
+        
+        with col_btn1:
+            if st.button("📋 Copy Data ke Clipboard", help="Copy ringkasan untuk paste ke RAB"):
+                summary_text = f"""
+HASIL KALKULATOR TEKNIS
+Luas: {luas_ha_calc:.2f} Ha ({luas_m2:,} m²)
+
+CABAI:
+- Bibit dibutuhkan: {bibit_dengan_cadangan:,} batang
+- Harga per batang: Rp {harga_bibit:,}
+- Total biaya bibit: Rp {total_biaya_bibit:,}
+
+MULSA:
+- Panjang total: {total_panjang_mulsa:,.0f} m
+- Jumlah roll: {jumlah_roll_mulsa} roll
+- Total biaya mulsa: Rp {total_biaya_mulsa:,}
+"""
+                if use_intercrop and intercrop_type:
+                    summary_text += f"""
+{intercrop_type.upper()}:
+- Bibit dibutuhkan: {intercrop_dengan_cadangan:,} batang
+- Harga per batang: Rp {intercrop_price:,}
+- Total biaya: Rp {total_biaya_intercrop:,}
+"""
+                summary_text += f"""
+TOTAL BIAYA TEKNIS: Rp {total_biaya_teknis:,}
+"""
+                st.code(summary_text, language="text")
+                st.success("✅ Data siap di-copy! Ctrl+C untuk copy.")
+        
+        with col_btn2:
+            st.info("""
+            **📝 Langkah Selanjutnya:**
+            1. Copy data di sebelah
+            2. Buka tab "Hitung RAB Detail"
+            3. Edit items sesuai hasil perhitungan
+            4. Lihat total RAB yang akurat
+            """)
+        
         # Download
         csv_detail = df_detail.to_csv(index=False)
         st.download_button(

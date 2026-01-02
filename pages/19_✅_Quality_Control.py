@@ -107,56 +107,76 @@ with tab1:
     with col_qr2:
         st.subheader("Generate QR Code")
         
-        if st.button("🎯 Generate QR Code", type="primary"):
-            st.write("DEBUG: Button clicked!")  # DEBUG
-            
-            product_data = {
-                'product_id': product_id,
-                'harvest_date': harvest_date.strftime('%Y-%m-%d'),
-                'farm_location': farm_location,
-                'farmer_name': farmer_name,
-                'grade': grade,
-                'batch_number': batch_number,
-                'weight_kg': weight_kg,
-                'certifications': selected_certs
-            }
-            
-            st.write("DEBUG: Product data created")  # DEBUG
-            
-            qr_result = QualityControlService.generate_qr_code(product_data)
-            
-            st.write("DEBUG: QR generated!")  # DEBUG
-            st.write(f"DEBUG: Image length = {len(qr_result['qr_image_base64'])}")  # DEBUG
-            
-            # Save to database for API access
-            DatabaseService.save_qr_product(product_data)
-            
-            st.write("DEBUG: Saved to database!")  # DEBUG
-            
-            # Store in session
-            st.session_state.qr_codes.append({
-                'product_id': product_id,
-                'qr_data': qr_result['qr_data'],
-                'qr_image': qr_result['qr_image_base64'],
-                'created_at': datetime.now()
-            })
-            
-            st.success("✅ QR Code generated and saved to database!")
-            
-            # Display QR code
-            st.markdown("---")
-            st.markdown("### QR Code")
-            
-            st.markdown(f"""
-            <div style='text-align: center; padding: 20px; background-color: white; border-radius: 10px;'>
-                <img src='data:image/png;base64,{qr_result['qr_image_base64']}' width='300'>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Verification URL
-            st.markdown("---")
-            st.success(f"🔗 **Verification URL:** {qr_result['verification_url']}")
-            st.info("💡 Scan QR code dengan smartphone untuk langsung ke halaman verifikasi")
+        if st.button("🎯 Generate QR Code", type="primary", key="generate_qr_btn"):
+            with st.spinner("Generating QR code..."):
+                try:
+                    product_data = {
+                        'product_id': product_id,
+                        'harvest_date': harvest_date.strftime('%Y-%m-%d'),
+                        'farm_location': farm_location,
+                        'farmer_name': farmer_name,
+                        'grade': grade,
+                        'batch_number': batch_number,
+                        'weight_kg': weight_kg,
+                        'certifications': selected_certs
+                    }
+                    
+                    # Generate QR code
+                    qr_result = QualityControlService.generate_qr_code(product_data)
+                    
+                    # Display immediately
+                    st.success("✅ QR Code generated successfully!")
+                    
+                    # Display QR code
+                    st.markdown("---")
+                    st.markdown("### 📱 QR Code")
+                    
+                    # Show QR image
+                    st.image(f"data:image/png;base64,{qr_result['qr_image_base64']}", width=300)
+                    
+                    # Verification URL
+                    st.markdown("---")
+                    st.info(f"🔗 **Verification URL:** {qr_result['verification_url']}")
+                    st.caption("💡 Scan QR code dengan smartphone untuk langsung ke halaman verifikasi")
+                    
+                    # Product info
+                    st.markdown("---")
+                    st.markdown("### 📋 Product Information")
+                    
+                    col_info1, col_info2 = st.columns(2)
+                    
+                    with col_info1:
+                        st.write(f"**Product ID:** {product_id}")
+                        st.write(f"**Harvest Date:** {harvest_date.strftime('%Y-%m-%d')}")
+                        st.write(f"**Location:** {farm_location}")
+                        st.write(f"**Farmer:** {farmer_name}")
+                    
+                    with col_info2:
+                        st.write(f"**Grade:** {grade}")
+                        st.write(f"**Weight:** {weight_kg} kg")
+                        st.write(f"**Batch:** {batch_number}")
+                        if selected_certs:
+                            st.write(f"**Certifications:** {', '.join(selected_certs)}")
+                    
+                    # Download button
+                    st.markdown("---")
+                    st.download_button(
+                        label="📥 Download QR Code URL",
+                        data=qr_result['verification_url'],
+                        file_name=f"QR_{product_id}.txt",
+                        mime="text/plain"
+                    )
+                    
+                    # Try to save to database (non-critical)
+                    try:
+                        DatabaseService.save_qr_product(product_data)
+                        st.caption("✅ Also saved to database for API access")
+                    except:
+                        st.caption("⚠️ Database save skipped (non-critical)")
+                    
+                except Exception as e:
+                    st.error(f"❌ Error generating QR code: {str(e)}")
+                    st.exception(e)
             
             # Product info
             st.markdown("---")

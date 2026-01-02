@@ -83,6 +83,23 @@ class DatabaseService:
             )
         ''')
         
+        # QR Products table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS qr_products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id TEXT UNIQUE NOT NULL,
+                harvest_id TEXT,
+                batch_number TEXT,
+                harvest_date TEXT NOT NULL,
+                farm_location TEXT,
+                farmer_name TEXT,
+                grade TEXT,
+                weight_kg REAL,
+                certifications TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
         conn.commit()
         conn.close()
         
@@ -406,6 +423,79 @@ class DatabaseService:
             for old_backup in backups[:-keep_last]:
                 os.remove(os.path.join(DatabaseService.BACKUP_DIR, old_backup))
     
+    # ===== QR PRODUCT OPERATIONS =====
+    
+    @staticmethod
+    def save_qr_product(product_data):
+        """Save QR product data"""
+        conn = sqlite3.connect(DatabaseService.DB_PATH)
+        cursor = conn.cursor()
+        
+        # Convert certifications list to JSON string
+        certs_json = json.dumps(product_data.get('certifications', []))
+        
+        cursor.execute('''
+            INSERT OR REPLACE INTO qr_products (
+                product_id, harvest_id, batch_number, harvest_date,
+                farm_location, farmer_name, grade, weight_kg, certifications
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            product_data['product_id'],
+            product_data.get('harvest_id', ''),
+            product_data.get('batch_number', ''),
+            product_data['harvest_date'],
+            product_data.get('farm_location', ''),
+            product_data.get('farmer_name', ''),
+            product_data.get('grade', ''),
+            product_data.get('weight_kg', 0),
+            certs_json
+        ))
+        
+        conn.commit()
+        product_id = cursor.lastrowid
+        conn.close()
+        
+        return product_id
+    
+    @staticmethod
+    def get_qr_product(product_id):
+        """Get QR product by ID"""
+        conn = sqlite3.connect(DatabaseService.DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT * FROM qr_products WHERE product_id = ?", (product_id,))
+        row = cursor.fetchone()
+        
+        conn.close()
+        
+        if row:
+            columns = [desc[0] for desc in cursor.description]
+            product = dict(zip(columns, row))
+            # Parse certifications JSON
+            product['certifications'] = json.loads(product.get('certifications', '[]'))
+            return product
+        
+        return None
+    
+    @staticmethod
+    def get_all_qr_products():
+        """Get all QR products"""
+        conn = sqlite3.connect(DatabaseService.DB_PATH)
+        
+        query = "SELECT * FROM qr_products ORDER BY created_at DESC"
+        df = pd.read_sql_query(query, conn)
+        
+        conn.close()
+        
+        if not df.empty:
+            products = df.to_dict('records')
+            # Parse certifications for each product
+            for product in products:
+                product['certifications'] = json.loads(product.get('certifications', '[]'))
+            return products
+        
+        return []
+    
     # ===== STATISTICS =====
     
     @staticmethod
@@ -419,6 +509,7 @@ class DatabaseService:
             'total_growth_records': cursor.execute("SELECT COUNT(*) FROM growth_records").fetchone()[0],
             'total_journal_entries': cursor.execute("SELECT COUNT(*) FROM journal_entries").fetchone()[0],
             'total_users': cursor.execute("SELECT COUNT(*) FROM user_profiles").fetchone()[0],
+            'total_qr_products': cursor.execute("SELECT COUNT(*) FROM qr_products").fetchone()[0],
             'database_size_kb': os.path.getsize(DatabaseService.DB_PATH) / 1024 if os.path.exists(DatabaseService.DB_PATH) else 0
         }
         

@@ -54,12 +54,12 @@ with tab1:
     """)
     
     st.warning("""
-    **⚠️ Important Note - Vercel Website:**
+    **⚠️ Important Note - API Backend:**
     - QR code akan membuka: https://cabe-q-r-vercel.vercel.app/
-    - Website Vercel menampilkan **demo data** (auto-generated)
-    - Data **tidak sinkron** dengan database Streamlit (by design)
-    - Untuk production: perlu API backend atau database sharing
-    - Saat ini: QR code berfungsi untuk demo traceability concept
+    - Website Vercel menggunakan **API backend** untuk data real-time
+    - Data **sinkron** dengan database Streamlit via FastAPI
+    - Scan QR → Vercel call API → Display real data
+    - Saat ini: Production-ready traceability system! ✅
     """)
     
     col_qr1, col_qr2 = st.columns(2)
@@ -121,6 +121,9 @@ with tab1:
             
             qr_result = QualityControlService.generate_qr_code(product_data)
             
+            # Save to database for API access
+            DatabaseService.save_qr_product(product_data)
+            
             # Store in session
             st.session_state.qr_codes.append({
                 'product_id': product_id,
@@ -129,7 +132,7 @@ with tab1:
                 'created_at': datetime.now()
             })
             
-            st.success("✅ QR Code generated!")
+            st.success("✅ QR Code generated and saved to database!")
             
             # Display QR code
             st.markdown("---")

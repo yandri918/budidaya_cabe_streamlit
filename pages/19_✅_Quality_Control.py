@@ -121,8 +121,13 @@ with tab1:
             
             qr_result = QualityControlService.generate_qr_code(product_data)
             
-            # Save to database for API access
-            DatabaseService.save_qr_product(product_data)
+            # Save to database for API access (non-blocking)
+            try:
+                DatabaseService.save_qr_product(product_data)
+                db_saved = True
+            except Exception as e:
+                st.warning(f"⚠️ QR generated but database save failed: {str(e)}")
+                db_saved = False
             
             # Store in session
             st.session_state.qr_codes.append({
@@ -132,7 +137,10 @@ with tab1:
                 'created_at': datetime.now()
             })
             
-            st.success("✅ QR Code generated and saved to database!")
+            if db_saved:
+                st.success("✅ QR Code generated and saved to database!")
+            else:
+                st.success("✅ QR Code generated! (Database save failed - check logs)")
             
             # Display QR code
             st.markdown("---")

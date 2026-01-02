@@ -50,8 +50,23 @@ with col_loc2:
         icon=folium.Icon(color='red', icon='info-sign')
     ).add_to(m)
     
+    # Add click handler for custom location
+    m.add_child(folium.LatLngPopup())
+    
     # Display map
-    st_folium(m, width=700, height=300)
+    map_data = st_folium(m, width=700, height=300)
+    
+    # Update coordinates if map clicked
+    if map_data and map_data.get('last_clicked'):
+        clicked_lat = map_data['last_clicked']['lat']
+        clicked_lon = map_data['last_clicked']['lng']
+        
+        st.info(f"📍 Lokasi dari peta: Lat {clicked_lat:.4f}, Lon {clicked_lon:.4f}")
+        
+        if st.button("Gunakan Lokasi Ini"):
+            lat, lon = clicked_lat, clicked_lon
+            st.session_state.weather_data = None
+            st.rerun()
 
 # Fetch weather data
 if st.button("🔄 Refresh Data Cuaca", type="primary"):
@@ -135,10 +150,10 @@ df_forecast['Suhu Min-Max'] = df_forecast.apply(
 df_forecast['Hujan'] = df_forecast.apply(
     lambda x: f"{x['rainfall']}mm ({x['rainfall_prob']}%)", axis=1
 )
+df_forecast['Angin'] = df_forecast['wind_speed'].apply(lambda x: f"{x} km/h")
 
-display_df = df_forecast[['Tanggal', 'Kondisi', 'Suhu Min-Max', 'Hujan', 'Angin (km/h)']].copy()
+display_df = df_forecast[['Tanggal', 'condition', 'Suhu Min-Max', 'Hujan', 'Angin']].copy()
 display_df.columns = ['Tanggal', 'Kondisi', 'Suhu', 'Hujan (Prob)', 'Angin']
-display_df['Angin'] = df_forecast['wind_speed'].apply(lambda x: f"{x} km/h")
 
 st.dataframe(display_df, width="stretch", hide_index=True)
 

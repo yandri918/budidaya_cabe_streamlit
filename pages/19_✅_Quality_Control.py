@@ -124,59 +124,70 @@ with tab1:
                     # Generate QR code
                     qr_result = QualityControlService.generate_qr_code(product_data)
                     
-                    # Display immediately
+                    # Store in session state so it persists across reruns
+                    st.session_state.current_qr = {
+                        'qr_image': qr_result['qr_image_base64'],
+                        'verification_url': qr_result['verification_url'],
+                        'product_data': product_data
+                    }
+                    
                     st.success("✅ QR Code generated successfully!")
-                    
-                    # Display QR code
-                    st.markdown("---")
-                    st.markdown("### 📱 QR Code")
-                    
-                    # Show QR image
-                    st.image(f"data:image/png;base64,{qr_result['qr_image_base64']}", width=300)
-                    
-                    # Verification URL
-                    st.markdown("---")
-                    st.info(f"🔗 **Verification URL:** {qr_result['verification_url']}")
-                    st.caption("💡 Scan QR code dengan smartphone untuk langsung ke halaman verifikasi")
-                    
-                    # Product info
-                    st.markdown("---")
-                    st.markdown("### 📋 Product Information")
-                    
-                    col_info1, col_info2 = st.columns(2)
-                    
-                    with col_info1:
-                        st.write(f"**Product ID:** {product_id}")
-                        st.write(f"**Harvest Date:** {harvest_date.strftime('%Y-%m-%d')}")
-                        st.write(f"**Location:** {farm_location}")
-                        st.write(f"**Farmer:** {farmer_name}")
-                    
-                    with col_info2:
-                        st.write(f"**Grade:** {grade}")
-                        st.write(f"**Weight:** {weight_kg} kg")
-                        st.write(f"**Batch:** {batch_number}")
-                        if selected_certs:
-                            st.write(f"**Certifications:** {', '.join(selected_certs)}")
-                    
-                    # Download button
-                    st.markdown("---")
-                    st.download_button(
-                        label="📥 Download QR Code URL",
-                        data=qr_result['verification_url'],
-                        file_name=f"QR_{product_id}.txt",
-                        mime="text/plain"
-                    )
                     
                     # Try to save to database (non-critical)
                     try:
                         DatabaseService.save_qr_product(product_data)
-                        st.caption("✅ Also saved to database for API access")
                     except:
-                        st.caption("⚠️ Database save skipped (non-critical)")
+                        pass
                     
                 except Exception as e:
                     st.error(f"❌ Error generating QR code: {str(e)}")
                     st.exception(e)
+        
+        # Display QR if it exists in session state (persists across reruns)
+        if 'current_qr' in st.session_state:
+            qr_data = st.session_state.current_qr
+            product_data = qr_data['product_data']
+            
+            # Display QR code
+            st.markdown("---")
+            st.markdown("### 📱 QR Code")
+            
+            # Show QR image
+            st.image(f"data:image/png;base64,{qr_data['qr_image']}", width=300)
+            
+            # Verification URL
+            st.markdown("---")
+            st.info(f"🔗 **Verification URL:** {qr_data['verification_url']}")
+            st.caption("💡 Scan QR code dengan smartphone untuk langsung ke halaman verifikasi")
+            
+            # Product info
+            st.markdown("---")
+            st.markdown("### 📋 Product Information")
+            
+            col_info1, col_info2 = st.columns(2)
+            
+            with col_info1:
+                st.write(f"**Product ID:** {product_data['product_id']}")
+                st.write(f"**Harvest Date:** {product_data['harvest_date']}")
+                st.write(f"**Location:** {product_data['farm_location']}")
+                st.write(f"**Farmer:** {product_data['farmer_name']}")
+            
+            with col_info2:
+                st.write(f"**Grade:** {product_data['grade']}")
+                st.write(f"**Weight:** {product_data['weight_kg']} kg")
+                st.write(f"**Batch:** {product_data['batch_number']}")
+                if product_data['certifications']:
+                    st.write(f"**Certifications:** {', '.join(product_data['certifications'])}")
+            
+            # Download button
+            st.markdown("---")
+            st.download_button(
+                label="📥 Download QR Code URL",
+                data=qr_data['verification_url'],
+                file_name=f"QR_{product_data['product_id']}.txt",
+                mime="text/plain",
+                key="download_qr_url"
+            )
             
             # Product info
             st.markdown("---")

@@ -115,8 +115,20 @@ with tab1:
             cost=cost,
             notes=notes
         )
+        
+        # Save to database
+        journal_data = {
+            'farmer_name': st.session_state.get('farmer_name', 'Default'),
+            'date': activity_date.strftime("%Y-%m-%d"),
+            'activity_type': activity_type,
+            'description': details,
+            'cost': cost
+        }
+        DatabaseService.save_journal_entry(journal_data)
+        
+        # Also keep in session state
         st.session_state.journal_entries.append(entry)
-        st.success(f"✅ Aktivitas '{activity_type}' berhasil dicatat!")
+        st.success(f"✅ Aktivitas '{activity_type}' berhasil dicatat dan disimpan ke database!")
     
     # Show recent entries
     if st.session_state.journal_entries:

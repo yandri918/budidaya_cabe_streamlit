@@ -108,6 +108,8 @@ with tab1:
         st.subheader("Generate QR Code")
         
         if st.button("🎯 Generate QR Code", type="primary"):
+            st.write("DEBUG: Button clicked!")  # DEBUG
+            
             product_data = {
                 'product_id': product_id,
                 'harvest_date': harvest_date.strftime('%Y-%m-%d'),
@@ -119,10 +121,17 @@ with tab1:
                 'certifications': selected_certs
             }
             
+            st.write("DEBUG: Product data created")  # DEBUG
+            
             qr_result = QualityControlService.generate_qr_code(product_data)
+            
+            st.write("DEBUG: QR generated!")  # DEBUG
+            st.write(f"DEBUG: Image length = {len(qr_result['qr_image_base64'])}")  # DEBUG
             
             # Save to database for API access
             DatabaseService.save_qr_product(product_data)
+            
+            st.write("DEBUG: Saved to database!")  # DEBUG
             
             # Store in session
             st.session_state.qr_codes.append({

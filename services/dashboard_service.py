@@ -25,6 +25,10 @@ class DashboardService:
         if planting_date:
             if isinstance(planting_date, str):
                 planting_date = datetime.strptime(planting_date, "%Y-%m-%d")
+            elif hasattr(planting_date, 'year') and not isinstance(planting_date, datetime):
+                # Convert date object to datetime
+                planting_date = datetime.combine(planting_date, datetime.min.time())
+            
             hst = (datetime.now() - planting_date).days
         else:
             hst = 0

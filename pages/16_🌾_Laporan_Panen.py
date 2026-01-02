@@ -56,6 +56,31 @@ with tab1:
             st.markdown("---")
     
     # Input form
+    st.subheader("👤 Profil Petani")
+    
+    col_profile1, col_profile2 = st.columns(2)
+    
+    with col_profile1:
+        farmer_name = st.text_input(
+            "Nama Petani",
+            value=st.session_state.get('farmer_name', ''),
+            placeholder="Contoh: Budi Santoso",
+            help="Nama lengkap petani"
+        )
+        st.session_state.farmer_name = farmer_name
+    
+    with col_profile2:
+        farm_location = st.text_input(
+            "Lokasi Kebun",
+            value=st.session_state.get('farm_location', ''),
+            placeholder="Contoh: Garut, Jawa Barat",
+            help="Lokasi kebun/lahan"
+        )
+        st.session_state.farm_location = farm_location
+    
+    st.markdown("---")
+    st.subheader("📝 Data Panen")
+    
     col_input1, col_input2 = st.columns(2)
     
     with col_input1:
@@ -122,8 +147,14 @@ with tab1:
     
     # Save button
     if st.button("💾 Simpan Data Panen", type="primary"):
-        if weight_kg > 0:
+        if not farmer_name:
+            st.warning("⚠️ Masukkan nama petani terlebih dahulu!")
+        elif not farm_location:
+            st.warning("⚠️ Masukkan lokasi kebun terlebih dahulu!")
+        elif weight_kg > 0:
             entry = HarvestReportService.create_harvest_entry(
+                farmer_name=farmer_name,
+                farm_location=farm_location,
                 harvest_number=harvest_number,
                 date=harvest_date,
                 grading=grading,
@@ -133,7 +164,7 @@ with tab1:
             )
             
             st.session_state.harvest_entries.append(entry)
-            st.success(f"✅ Data panen ke-{harvest_number} berhasil disimpan!")
+            st.success(f"✅ Data panen ke-{harvest_number} untuk {farmer_name} berhasil disimpan!")
             st.rerun()
         else:
             st.warning("⚠️ Masukkan berat panen terlebih dahulu!")
@@ -246,8 +277,8 @@ with tab2:
         st.subheader("📋 Rincian Panen")
         
         df_harvest = pd.DataFrame(st.session_state.harvest_entries)
-        df_harvest = df_harvest[['harvest_number', 'date', 'grading', 'weight_kg', 'price_per_kg', 'total_value', 'notes']]
-        df_harvest.columns = ['Panen Ke', 'Tanggal', 'Grade', 'Berat (kg)', 'Harga/kg', 'Total Nilai', 'Catatan']
+        df_harvest = df_harvest[['farmer_name', 'farm_location', 'harvest_number', 'date', 'grading', 'weight_kg', 'price_per_kg', 'total_value', 'notes']]
+        df_harvest.columns = ['Nama Petani', 'Lokasi', 'Panen Ke', 'Tanggal', 'Grade', 'Berat (kg)', 'Harga/kg', 'Total Nilai', 'Catatan']
         
         # Format currency
         df_harvest['Harga/kg'] = df_harvest['Harga/kg'].apply(lambda x: f"Rp {x:,.0f}")

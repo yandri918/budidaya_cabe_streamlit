@@ -9,11 +9,13 @@ import pandas as pd
 class HarvestReportService:
     
     @staticmethod
-    def create_harvest_entry(harvest_number, date, grading, weight_kg, price_per_kg, notes=""):
+    def create_harvest_entry(farmer_name, farm_location, harvest_number, date, grading, weight_kg, price_per_kg, notes=""):
         """
         Create a harvest entry
         
         Args:
+            farmer_name: Nama petani
+            farm_location: Lokasi kebun
             harvest_number: Panen ke-berapa (1, 2, 3, ...)
             date: Tanggal panen
             grading: Grade (A, B, C, Reject)
@@ -27,6 +29,8 @@ class HarvestReportService:
         total_value = weight_kg * price_per_kg
         
         return {
+            'farmer_name': farmer_name,
+            'farm_location': farm_location,
             'harvest_number': harvest_number,
             'date': date if isinstance(date, str) else date.strftime('%Y-%m-%d'),
             'grading': grading,
@@ -110,8 +114,8 @@ class HarvestReportService:
             return ""
         
         df = pd.DataFrame(harvest_entries)
-        df = df[['harvest_number', 'date', 'grading', 'weight_kg', 'price_per_kg', 'total_value', 'notes']]
-        df.columns = ['Panen Ke', 'Tanggal', 'Grade', 'Berat (kg)', 'Harga/kg', 'Total Nilai', 'Catatan']
+        df = df[['farmer_name', 'farm_location', 'harvest_number', 'date', 'grading', 'weight_kg', 'price_per_kg', 'total_value', 'notes']]
+        df.columns = ['Nama Petani', 'Lokasi Kebun', 'Panen Ke', 'Tanggal', 'Grade', 'Berat (kg)', 'Harga/kg', 'Total Nilai', 'Catatan']
         
         return df.to_csv(index=False)
     

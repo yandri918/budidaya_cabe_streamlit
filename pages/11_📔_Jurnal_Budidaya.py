@@ -4,16 +4,32 @@ import plotly.express as px
 from datetime import datetime, timedelta
 from services.journal_service import JournalService
 from services.growth_monitoring_service import GrowthMonitoringService
+from services.database_service import DatabaseService
 from data.activity_templates import ACTIVITY_TEMPLATES
 
 st.set_page_config(page_title="Jurnal Budidaya", page_icon="📔", layout="wide")
 
+# Initialize database
+DatabaseService.init_database()
+
 st.title("📔 Jurnal Budidaya Cabai")
 st.markdown("**Catat aktivitas harian dan pantau compliance dengan SOP**")
 
-# Initialize session state
+# Load from database on first run
 if 'journal_entries' not in st.session_state:
-    st.session_state.journal_entries = []
+    db_entries = DatabaseService.get_journal_entries()
+    # Convert to journal format
+    st.session_state.journal_entries = [
+        {
+            'date': e.get('date', ''),
+            'hst': 0,  # Calculate from planting date if needed
+            'activity_type': e.get('activity_type', ''),
+            'details': e.get('description', ''),
+            'cost': e.get('cost', 0),
+            'notes': ''
+        }
+        for e in db_entries
+    ]
 
 if 'planting_date' not in st.session_state:
     st.session_state.planting_date = datetime.now() - timedelta(days=30)

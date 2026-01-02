@@ -4,16 +4,31 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
 from services.growth_monitoring_service import GrowthMonitoringService
+from services.database_service import DatabaseService
 from data.growth_milestones import GROWTH_MILESTONES
 
 st.set_page_config(page_title="Pantau Pertumbuhan", page_icon="📈", layout="wide")
 
+# Initialize database
+DatabaseService.init_database()
+
 st.title("📈 Pantau Pertumbuhan Cabai")
 st.markdown("**Track pertumbuhan tanaman dan bandingkan dengan milestone SOP**")
 
-# Initialize session state for measurements
+# Load from database on first run
 if 'measurements' not in st.session_state:
-    st.session_state.measurements = []
+    db_records = DatabaseService.get_growth_records()
+    # Convert to measurements format
+    st.session_state.measurements = [
+        {
+            'date': r['created_at'][:10] if r.get('created_at') else r.get('planting_date', ''),
+            'hst': r.get('hst', 0),
+            'height': r.get('height_cm', 0),
+            'leaves': r.get('leaf_count', 0),
+            'notes': r.get('notes', '')
+        }
+        for r in db_records
+    ]
 
 # Tabs
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -84,8 +99,22 @@ with tab1:
             'leaves': leaves,
             'notes': notes
         }
+        
+        # Save to database
+        growth_data = {
+            'farmer_name': st.session_state.get('farmer_name', 'Default'),
+            'planting_date': planting_date.strftime("%Y-%m-%d"),
+            'hst': current_hst,
+            'height_cm': height,
+            'leaf_count': leaves,
+            'health_score': 0,  # Can be updated from health assessment
+            'notes': notes
+        }
+        DatabaseService.save_growth_record(growth_data)
+        
+        # Also keep in session state
         st.session_state.measurements.append(measurement)
-        st.success("✅ Pengukuran tersimpan!")
+        st.success("✅ Pengukuran tersimpan ke database!")
     
     # Compare with milestone
     if current_hst > 0:
@@ -140,9 +169,28 @@ with tab1:
         df_measurements = pd.DataFrame(st.session_state.measurements)
         st.dataframe(df_measurements, use_container_width=True, hide_index=True)
         
-        if st.button("🗑️ Hapus Semua Data"):
-            st.session_state.measurements = []
-            st.rerun()
+        col_btn1, col_btn2 = st.columns(2)
+        
+        with col_btn1:
+            if st.button("🔄 Reload dari Database"):
+                db_records = DatabaseService.get_growth_records()
+                st.session_state.measurements = [
+                    {
+                        'date': r['created_at'][:10] if r.get('created_at') else r.get('planting_date', ''),
+                        'hst': r.get('hst', 0),
+                        'height': r.get('height_cm', 0),
+                        'leaves': r.get('leaf_count', 0),
+                        'notes': r.get('notes', '')
+                    }
+                    for r in db_records
+                ]
+                st.success("✅ Data berhasil di-reload dari database!")
+                st.rerun()
+        
+        with col_btn2:
+            if st.button("🗑️ Hapus dari Session"):
+                st.session_state.measurements = []
+                st.rerun()
 
 # TAB 2: Timeline Milestone
 with tab2:

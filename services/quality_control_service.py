@@ -38,9 +38,13 @@ class QualityControlService:
         Returns:
             dict with QR code image and data
         """
-        # Create QR data
+        # Create verification URL for Vercel website
+        product_id = product_data.get('product_id', '')
+        verification_url = f"https://cabe-q-r-vercel.vercel.app/?id={product_id}"
+        
+        # Also prepare JSON data for reference
         qr_data = {
-            'product_id': product_data.get('product_id', ''),
+            'product_id': product_id,
             'harvest_date': product_data.get('harvest_date', ''),
             'farm_location': product_data.get('farm_location', ''),
             'farmer_name': product_data.get('farmer_name', ''),
@@ -48,20 +52,17 @@ class QualityControlService:
             'batch_number': product_data.get('batch_number', ''),
             'weight_kg': product_data.get('weight_kg', 0),
             'certifications': product_data.get('certifications', []),
-            'verification_url': f"https://budidayacabe.streamlit.app/verify?id={product_data.get('product_id', '')}"
+            'verification_url': verification_url
         }
         
-        # Convert to JSON string
-        qr_string = json.dumps(qr_data, ensure_ascii=False)
-        
-        # Generate QR code
+        # Generate QR code with Vercel URL (not JSON)
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
             box_size=10,
             border=4,
         )
-        qr.add_data(qr_string)
+        qr.add_data(verification_url)  # Use URL instead of JSON
         qr.make(fit=True)
         
         # Create image
@@ -75,7 +76,8 @@ class QualityControlService:
         return {
             'qr_image_base64': img_str,
             'qr_data': qr_data,
-            'qr_string': qr_string
+            'qr_string': verification_url,  # Return URL
+            'verification_url': verification_url
         }
     
     # ===== TRACEABILITY =====

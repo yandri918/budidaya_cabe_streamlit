@@ -132,6 +132,11 @@ with tab1:
             </div>
             """, unsafe_allow_html=True)
             
+            # Verification URL
+            st.markdown("---")
+            st.success(f"🔗 **Verification URL:** {qr_result['verification_url']}")
+            st.info("💡 Scan QR code dengan smartphone untuk langsung ke halaman verifikasi")
+            
             # Product info
             st.markdown("---")
             st.markdown("### Product Information")
@@ -153,12 +158,21 @@ with tab1:
             
             # Download button
             st.markdown("---")
-            st.download_button(
-                label="📥 Download QR Code",
-                data=qr_result['qr_string'],
-                file_name=f"QR_{product_id}.txt",
-                mime="text/plain"
-            )
+            
+            col_dl1, col_dl2 = st.columns(2)
+            
+            with col_dl1:
+                st.download_button(
+                    label="📥 Download QR Code URL",
+                    data=qr_result['verification_url'],
+                    file_name=f"QR_{product_id}.txt",
+                    mime="text/plain"
+                )
+            
+            with col_dl2:
+                # Create clickable link
+                st.markdown(f"[🌐 Open Verification Page]({qr_result['verification_url']})")
+
 
 # TAB 2: Traceability
 with tab2:

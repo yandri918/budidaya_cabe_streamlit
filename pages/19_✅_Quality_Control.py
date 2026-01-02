@@ -53,6 +53,15 @@ with tab1:
     - Certification status
     """)
     
+    st.warning("""
+    **⚠️ Important Note - Vercel Website:**
+    - QR code akan membuka: https://cabe-q-r-vercel.vercel.app/
+    - Website Vercel menampilkan **demo data** (auto-generated)
+    - Data **tidak sinkron** dengan database Streamlit (by design)
+    - Untuk production: perlu API backend atau database sharing
+    - Saat ini: QR code berfungsi untuk demo traceability concept
+    """)
+    
     col_qr1, col_qr2 = st.columns(2)
     
     with col_qr1:
@@ -571,4 +580,11 @@ st.info("""
 - Consumer trust
 - Regulatory compliance
 - Quality improvement tracking
+
+**⚠️ Vercel Website Limitation:**
+- QR verification website: https://cabe-q-r-vercel.vercel.app/
+- Menampilkan **demo data** (auto-generated)
+- Tidak sinkron dengan database Streamlit
+- Untuk production: perlu API backend
+- Saat ini: Demo concept traceability system
 """)

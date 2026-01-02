@@ -4,15 +4,19 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
 from services.harvest_report_service import HarvestReportService
+from services.database_service import DatabaseService
 
 st.set_page_config(page_title="Laporan Panen", page_icon="🌾", layout="wide")
+
+# Initialize database
+DatabaseService.init_database()
 
 st.title("🌾 Laporan Panen Berjenjang")
 st.markdown("**Tracking panen per periode dengan grading, berat, dan harga**")
 
-# Initialize session state
+# Load data from database on first run
 if 'harvest_entries' not in st.session_state:
-    st.session_state.harvest_entries = []
+    st.session_state.harvest_entries = DatabaseService.get_all_harvests()
 
 # Sidebar - Input Parameters
 st.sidebar.header("⚙️ Parameter Lahan")
@@ -163,8 +167,13 @@ with tab1:
                 notes=notes
             )
             
+            # Save to database
+            DatabaseService.save_harvest(entry)
+            
+            # Also keep in session state for immediate display
             st.session_state.harvest_entries.append(entry)
-            st.success(f"✅ Data panen ke-{harvest_number} untuk {farmer_name} berhasil disimpan!")
+            
+            st.success(f"✅ Data panen ke-{harvest_number} untuk {farmer_name} berhasil disimpan ke database!")
             st.rerun()
         else:
             st.warning("⚠️ Masukkan berat panen terlebih dahulu!")
@@ -288,9 +297,9 @@ with tab2:
         
         # Export
         st.markdown("---")
-        st.subheader("📥 Export Data")
+        st.subheader("📥 Export & Database")
         
-        col_exp1, col_exp2 = st.columns(2)
+        col_exp1, col_exp2, col_exp3 = st.columns(3)
         
         with col_exp1:
             csv_data = HarvestReportService.export_harvest_report(st.session_state.harvest_entries)
@@ -303,9 +312,16 @@ with tab2:
             )
         
         with col_exp2:
-            if st.button("🗑️ Hapus Semua Data"):
-                st.session_state.harvest_entries = []
+            if st.button("🔄 Reload dari Database"):
+                st.session_state.harvest_entries = DatabaseService.get_all_harvests()
+                st.success("✅ Data berhasil di-reload dari database!")
                 st.rerun()
+        
+        with col_exp3:
+            if st.button("🗑️ Hapus Semua Data"):
+                if st.checkbox("Konfirmasi hapus semua data"):
+                    st.session_state.harvest_entries = []
+                    st.rerun()
     
     else:
         st.info("📊 Belum ada data panen. Mulai input di tab 'Input Panen'.")

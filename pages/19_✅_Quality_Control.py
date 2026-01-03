@@ -202,20 +202,21 @@ with tab1:
                 st.write(f"**Farmer:** {farmer_name}")
             
             with col_info2:
-            col_dl1, col_dl2 = st.columns(2)
+                st.write(f"**Grade:** {product_data['grade']}")
+                st.write(f"**Weight:** {product_data['weight_kg']} kg")
+                st.write(f"**Batch:** {product_data['batch_number']}")
+                if product_data['certifications']:
+                    st.write(f"**Certifications:** {', '.join(product_data['certifications'])}")
             
-            with col_dl1:
-                st.download_button(
-                    label="📥 Download QR Code URL",
-                    data=qr_result['verification_url'],
-                    file_name=f"QR_{product_id}.txt",
-                    mime="text/plain"
-                )
-            
-            with col_dl2:
-                # Create clickable link
-                st.markdown(f"[🌐 Open Verification Page]({qr_result['verification_url']})")
-
+            # Download button
+            st.markdown("---")
+            st.download_button(
+                label="📥 Download QR Code URL",
+                data=qr_data['verification_url'],
+                file_name=f"QR_{product_data['product_id']}.txt",
+                mime="text/plain",
+                key="download_qr_url"
+            )
 
 # TAB 2: Traceability
 with tab2:

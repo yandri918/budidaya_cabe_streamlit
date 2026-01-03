@@ -202,15 +202,6 @@ with tab1:
                 st.write(f"**Farmer:** {farmer_name}")
             
             with col_info2:
-                st.write(f"**Grade:** {grade}")
-                st.write(f"**Weight:** {weight_kg} kg")
-                st.write(f"**Batch:** {batch_number}")
-                if selected_certs:
-                    st.write(f"**Certifications:** {', '.join(selected_certs)}")
-            
-            # Download button
-            st.markdown("---")
-            
             col_dl1, col_dl2 = st.columns(2)
             
             with col_dl1:

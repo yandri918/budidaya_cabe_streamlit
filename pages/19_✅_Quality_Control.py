@@ -92,6 +92,18 @@ if st.button("🎯 Generate QR Code", type="primary", key="qr_generate_btn", use
             try:
                 DatabaseService.save_qr_product(product_data)
                 st.session_state.db_saved = True
+                
+                # Export all products to JSON for Vercel sync
+                try:
+                    import json
+                    all_products = DatabaseService.get_all_qr_products()
+                    json_path = 'qr_products.json'
+                    with open(json_path, 'w', encoding='utf-8') as f:
+                        json.dump(all_products, f, indent=2, ensure_ascii=False)
+                    st.session_state.json_exported = True
+                except Exception as json_error:
+                    st.session_state.json_exported = False
+                    
             except Exception as db_error:
                 st.session_state.db_saved = False
                 st.warning(f"⚠️ Database save failed: {str(db_error)}")
@@ -128,6 +140,8 @@ if 'qr_data' in st.session_state:
         
         if st.session_state.get('db_saved', False):
             st.caption("✅ Saved to database for API access")
+            if st.session_state.get('json_exported', False):
+                st.caption("✅ Exported to qr_products.json for Vercel sync")
     
     with col_display2:
         # Verification URL

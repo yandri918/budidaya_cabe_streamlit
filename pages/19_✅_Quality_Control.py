@@ -165,9 +165,9 @@ with tab1:
             if product_data['certifications']:
                 st.write(f"• **Certs:** {', '.join(product_data['certifications'])}")
 
+
 # TAB 2: Traceability
-with tab1:
-    st.header("📱 QR Code Generator")
+with tab2:
     
     st.info("""
     **Generate QR code untuk product traceability:**

@@ -44,6 +44,131 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 with tab1:
     st.header("📱 QR Code Generator")
     
+    st.warning("""
+    ⚠️ **Important Note - API Backend:**
+    - Website Vercel menggunakan **API backend** untuk data real-time
+    - Data **sinkron** dengan database Streamlit via FastAPI
+    - Saat ini: Production-ready traceability system! ✅
+    
+    📖 **Deployment Guide:** Lihat `API_DEPLOYMENT_GUIDE.md` untuk deploy API ke Streamlit Cloud
+    """)
+    
+    st.info("""
+    **Generate QR code untuk produk cabai:**
+    - Unique Product ID
+    - Harvest information
+    - Quality grade
+    - Certifications
+    """)
+    
+    col_qr1, col_qr2 = st.columns([1, 1])
+    
+    with col_qr1:
+        st.subheader("Product Information")
+        
+        # Auto-generate Product ID
+        harvest_date = st.date_input("Harvest Date", value=datetime.now())
+        harvest_id = f"H{harvest_date.strftime('%j')}"
+        batch_number = st.text_input("Batch Number", value="B001")
+        product_id = f"CHI-{harvest_id}-{batch_number}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        
+        st.info(f"**Product ID:** `{product_id}`")
+        
+        # Farm details
+        farm_location = st.text_input("Farm Location", value="Garut, Jawa Barat")
+        farmer_name = st.text_input("Farmer Name", value="")
+        
+        # Quality
+        grade = st.selectbox("Quality Grade", ["Grade A (Premium)", "Grade B (Standard)", "Grade C (Economy)"])
+        
+        weight_kg = st.number_input("Weight (kg)", min_value=0.0, max_value=1000.0, value=10.0, step=0.1)
+        
+        # Certifications
+        available_certs = list(CERTIFICATION_TYPES.keys())
+        selected_certs = st.multiselect("Certifications", available_certs, default=[])
+    
+    with col_qr2:
+        st.subheader("Generate QR Code")
+        
+        if st.button("🎯 Generate QR Code", type="primary", key="gen_qr"):
+            with st.spinner("Generating QR code..."):
+                try:
+                    # Prepare product data
+                    product_data = {
+                        'product_id': product_id,
+                        'harvest_date': harvest_date.strftime('%Y-%m-%d'),
+                        'farm_location': farm_location,
+                        'farmer_name': farmer_name,
+                        'grade': grade,
+                        'batch_number': batch_number,
+                        'weight_kg': weight_kg,
+                        'certifications': selected_certs
+                    }
+                    
+                    # Generate QR code
+                    qr_result = QualityControlService.generate_qr_code(product_data)
+                    
+                    # Store in session state
+                    st.session_state.current_qr = {
+                        'qr_image': qr_result['qr_image_base64'],
+                        'verification_url': qr_result['verification_url'],
+                        'product_data': product_data
+                    }
+                    
+                    # Save to database (non-blocking)
+                    try:
+                        DatabaseService.save_qr_product(product_data)
+                    except:
+                        pass
+                    
+                    st.success("✅ QR Code generated successfully!")
+                    
+                except Exception as e:
+                    st.error(f"❌ Error: {str(e)}")
+    
+    # Display QR if exists in session state
+    if 'current_qr' in st.session_state:
+        qr_data = st.session_state.current_qr
+        product_data = qr_data['product_data']
+        
+        st.markdown("---")
+        st.markdown("### 📱 Your QR Code")
+        
+        col_display1, col_display2 = st.columns([1, 1])
+        
+        with col_display1:
+            # QR Image
+            st.image(f"data:image/png;base64,{qr_data['qr_image']}", width=300)
+            
+            # Download button
+            st.download_button(
+                label="📥 Download QR Code URL",
+                data=qr_data['verification_url'],
+                file_name=f"QR_{product_data['product_id']}.txt",
+                mime="text/plain",
+                key="dl_qr"
+            )
+        
+        with col_display2:
+            # Verification URL
+            st.info(f"🔗 **Verification URL:**\n{qr_data['verification_url']}")
+            st.caption("💡 Scan QR code dengan smartphone untuk langsung ke halaman verifikasi")
+            
+            # Product info
+            st.markdown("**Product Details:**")
+            st.write(f"• **ID:** {product_data['product_id']}")
+            st.write(f"• **Date:** {product_data['harvest_date']}")
+            st.write(f"• **Location:** {product_data['farm_location']}")
+            st.write(f"• **Farmer:** {product_data['farmer_name']}")
+            st.write(f"• **Grade:** {product_data['grade']}")
+            st.write(f"• **Weight:** {product_data['weight_kg']} kg")
+            if product_data['certifications']:
+                st.write(f"• **Certs:** {', '.join(product_data['certifications'])}")
+
+# TAB 2: Traceability
+with tab1:
+    st.header("📱 QR Code Generator")
+    
     st.info("""
     **Generate QR code untuk product traceability:**
     - Unique product ID

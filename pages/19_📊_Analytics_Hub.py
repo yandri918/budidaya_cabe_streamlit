@@ -45,16 +45,28 @@ with tab1:
     col_input1, col_input2, col_input3 = st.columns(3)
     
     with col_input1:
+        st.markdown("**📏 Parameter Tanaman**")
         hst = st.number_input("HST (Hari Setelah Tanam)", min_value=0, max_value=200, value=120, step=1)
         avg_height = st.number_input("Tinggi Rata-rata (cm)", min_value=0, max_value=150, value=65, step=1)
+        avg_leaves = st.number_input("Jumlah Daun Rata-rata", min_value=0, max_value=100, value=45, step=1)
     
     with col_input2:
-        avg_leaves = st.number_input("Jumlah Daun Rata-rata", min_value=0, max_value=100, value=45, step=1)
+        st.markdown("**🌧️ Kondisi Lingkungan**")
         rainfall_mm = st.number_input("Total Curah Hujan (mm)", min_value=0, max_value=2000, value=500, step=10)
+        pest_severity = st.slider("Tingkat Serangan Hama (%)", min_value=0, max_value=100, value=10, step=5)
     
     with col_input3:
-        fertilizer_kg = st.number_input("Total Pupuk (kg)", min_value=0, max_value=1000, value=300, step=10)
-        pest_severity = st.slider("Tingkat Serangan Hama (%)", min_value=0, max_value=100, value=10, step=5)
+        st.markdown("**🧪 Input Pupuk (kg/ha)**")
+        npk_phonska = st.number_input("NPK Phonska", min_value=0, max_value=500, value=150, step=10, help="Pupuk NPK 15-15-15")
+        urea = st.number_input("Urea", min_value=0, max_value=300, value=80, step=10, help="Pupuk nitrogen")
+        sp36 = st.number_input("SP-36", min_value=0, max_value=200, value=50, step=10, help="Pupuk fosfat")
+        kcl = st.number_input("KCl", min_value=0, max_value=200, value=40, step=10, help="Pupuk kalium")
+        
+    # Calculate total fertilizer
+    fertilizer_kg = npk_phonska + urea + sp36 + kcl
+    
+    st.caption(f"**Total Pupuk: {fertilizer_kg} kg/ha** (Phonska: {npk_phonska}, Urea: {urea}, SP-36: {sp36}, KCl: {kcl})")
+
     
     if st.button("🔮 Generate Prediction", type="primary", key="predict_btn"):
         with st.spinner("Calculating predictions..."):

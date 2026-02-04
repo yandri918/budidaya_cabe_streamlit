@@ -1,5 +1,5 @@
 """
-🌶️ Budidaya Cabai - Platform Lengkap
+Budidaya Cabai - Enterprise Platform
 Main Dashboard & Navigation
 """
 
@@ -9,8 +9,8 @@ from pathlib import Path
 
 # Page config
 st.set_page_config(
-    page_title="Budidaya Cabai - Platform Lengkap",
-    page_icon="🌶️",
+    page_title="Chili Cultivation Enterprise Platform",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -19,33 +19,51 @@ st.set_page_config(
 st.markdown("""
 <style>
     .main-header {
-        background: linear-gradient(135deg, #FF6B6B 0%, #C92A2A 100%);
-        padding: 2rem;
-        border-radius: 15px;
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        padding: 3rem 2rem;
+        border-radius: 12px;
         color: white;
         text-align: center;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    .main-header h1 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
     }
     .feature-card {
         background: white;
         padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #FF6B6B;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid #10b981;
         margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+    .feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
     .stat-card {
-        background: linear-gradient(135deg, #FFE5E5 0%, #FFD0D0 100%);
+        background: #f9fafb;
         padding: 1.5rem;
-        border-radius: 10px;
+        border-radius: 8px;
         text-align: center;
+        border: 1px solid #e5e7eb;
     }
-    .comparison-table {
-        background: white;
-        padding: 1rem;
-        border-radius: 10px;
-        margin: 1rem 0;
+    .stat-card h2 {
+        color: #10b981;
+        font-size: 2rem;
+        margin: 0;
+    }
+    .stat-card p {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -53,22 +71,22 @@ st.markdown("""
 # Header
 st.markdown("""
 <div class="main-header">
-    <h1>🌶️ Platform Budidaya Cabai Lengkap</h1>
-    <p style="font-size: 1.2rem;">Standar Industri | 6 Skenario Budidaya | AI-Powered</p>
-    <p><strong>Organik • Kimia • Campuran | Terbuka • Greenhouse</strong></p>
+    <h1>Chili Cultivation Enterprise Platform</h1>
+    <p style="color: #d1d5db; font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+        Integrated agricultural intelligence system powered by data science. 
+        Featuring standard operating procedures, financial modeling, and precision agronomy.
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
 # Quick Stats
-st.markdown("### 📊 Ringkasan Platform")
-
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.markdown("""
     <div class="stat-card">
         <h2>12</h2>
-        <p>Modul Lengkap</p>
+        <p>Core Modules</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -76,7 +94,7 @@ with col2:
     st.markdown("""
     <div class="stat-card">
         <h2>6</h2>
-        <p>Skenario Budidaya</p>
+        <p>Cultivation Scenarios</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -84,7 +102,7 @@ with col3:
     st.markdown("""
     <div class="stat-card">
         <h2>10+</h2>
-        <p>Hama & Penyakit</p>
+        <p>Disease Database</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -92,126 +110,96 @@ with col4:
     st.markdown("""
     <div class="stat-card">
         <h2>100%</h2>
-        <p>Berbasis Data</p>
+        <p>Data Driven</p>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("---")
 
 # Main Features
-st.markdown("### 🎯 Fitur Utama")
+st.markdown("### 🎯 Core Capabilities")
 
 col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("""
     <div class="feature-card">
-        <h4>📅 Kalender Tanam</h4>
-        <p>Rekomendasi waktu tanam optimal berdasarkan lokasi & iklim</p>
+        <h4>Planting Calendar</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Optimal timeline recommendations based on geospatial climate data.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>💰 Prediksi Harga</h4>
-        <p>ML forecasting 3-6 bulan ke depan</p>
+        <h4>Price Forecasting</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Machine Learning models (Prophet) for 3-6 month market trend analysis.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>🎯 AI Saran Terbaik</h4>
-        <p>Personalized recommendations untuk sistem budidaya</p>
+        <h4>AI Advisory System</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Personalized cultivation strategy recommendations.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>💵 RAB Calculator</h4>
-        <p>6 skenario lengkap dengan ROI analysis</p>
+        <h4>RAB Calculator</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Comprehensive budgeting with ROI analysis for 6 scenarios.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>📋 SOP Lengkap</h4>
-        <p>Standard Operating Procedure untuk setiap sistem</p>
+        <h4>Standard Procedures (SOP)</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Industry-standard operating procedures for consistency.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>🧪 Kalkulator Pupuk</h4>
-        <p>Perhitungan NPK makro & mikro nutrient</p>
+        <h4>Fertilizer Calculator</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Precision NPK macro & micro nutrient calculation.</p>
     </div>
     """, unsafe_allow_html=True)
 
 with col2:
     st.markdown("""
     <div class="feature-card">
-        <h4>🐛 Hama & Penyakit</h4>
-        <p>Database lengkap dengan solusi organik & kimia</p>
+        <h4>Pest & Disease Management</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Integrated database with organic and chemical solutions.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>📊 Analisis Bisnis</h4>
-        <p>ROI, break-even, cashflow projection</p>
+        <h4>Business Analytics</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Financial modeling including break-even and cashflow analysis.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>🌶️ Varietas Cabai</h4>
-        <p>10+ varietas dengan rekomendasi</p>
+        <h4>Variety Database</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Characteristics and yield potential of top cultivars.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>💡 Tips & Trik</h4>
-        <p>Best practices & troubleshooting</p>
+        <h4>Best Practices</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Expert tips for yield maximization and risk mitigation.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>📈 Data & Statistik</h4>
-        <p>Real-time price & market insights</p>
+        <h4>Market Intelligence</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">Real-time price monitoring and statistical insights.</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
     <div class="feature-card">
-        <h4>📚 Panduan Lengkap</h4>
-        <p>Step-by-step cultivation guide</p>
+        <h4>Comprehensive Guide</h4>
+        <p style="color: #6b7280; font-size: 0.9rem;">End-to-end cultivation manual for all experience levels.</p>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("---")
 
 # 6 Cultivation Scenarios
-st.markdown("### 🆚 6 Skenario Budidaya")
+st.markdown("### 📊 Cultivation Models Comparison")
 
 import pandas as pd
 
 scenarios_data = {
-    'Skenario': [
-        '1. Organik + Terbuka',
-        '2. Organik + Greenhouse',
-        '3. Kimia + Terbuka',
-        '4. Kimia + Greenhouse',
-        '5. Campuran + Terbuka',
-        '6. Campuran + Greenhouse'
+    'Scenario': [
+        '1. Organic + Open Field',
+        '2. Organic + Greenhouse',
+        '3. Chemical + Open Field',
+        '4. Chemical + Greenhouse',
+        '5. Hybrid + Open Field',
+        '6. Hybrid + Greenhouse'
     ],
-    'Investasi/ha': [
-        'Rp 30-50 juta',
-        'Rp 250-400 juta',
-        'Rp 20-35 juta',
-        'Rp 200-350 juta',
-        'Rp 25-40 juta',
-        'Rp 220-380 juta'
+    'Investment/ha': [
+        'IDR 30-50M',
+        'IDR 250-400M',
+        'IDR 20-35M',
+        'IDR 200-350M',
+        'IDR 25-40M',
+        'IDR 220-380M'
     ],
     'Yield (ton/ha)': [
         '8-12',
@@ -221,15 +209,15 @@ scenarios_data = {
         '10-15',
         '30-45'
     ],
-    'Harga Jual (Rp/kg)': [
-        '40-60k',
-        '50-80k',
-        '20-35k',
-        '25-40k',
-        '30-45k',
-        '35-55k'
+    'Price Potential': [
+        'High',
+        'Premium',
+        'Standard',
+        'Standard+',
+        'Medium',
+        'High'
     ],
-    'ROI (bulan)': [
+    'ROI Period (months)': [
         '18-24',
         '20-30',
         '10-15',
@@ -244,47 +232,10 @@ st.dataframe(df_scenarios, use_container_width=True, hide_index=True)
 
 st.markdown("---")
 
-# Getting Started
-st.markdown("### 🚀 Mulai Sekarang")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.info("""
-    **📚 Pemula?**
-    
-    Mulai dari:
-    1. Panduan Budidaya
-    2. AI Saran Terbaik
-    3. RAB Calculator
-    """)
-
-with col2:
-    st.success("""
-    **💼 Bisnis?**
-    
-    Fokus ke:
-    1. Analisis Bisnis
-    2. Prediksi Harga
-    3. Kalender Tanam
-    """)
-
-with col3:
-    st.warning("""
-    **🌱 Organik?**
-    
-    Lihat:
-    1. SOP Organik
-    2. Hama & Penyakit (Organik)
-    3. Kalkulator Pupuk Organik
-    """)
-
 # Footer
-st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #666; padding: 1rem;">
-    <p><strong>🌶️ Platform Budidaya Cabai</strong></p>
-    <p>Berbasis data dari AgriSensa | Standar Industri | Comprehensive</p>
-    <p><small>Gunakan sidebar untuk navigasi ke modul-modul</small></p>
+<div style="text-align: center; color: #9ca3af; padding: 2rem; border-top: 1px solid #e5e7eb;">
+    <p><strong>AgriSensa Intelligence Systems</strong></p>
+    <p style="font-size: 0.8rem;">© 2026 All Rights Reserved | Enterprise Edition</p>
 </div>
 """, unsafe_allow_html=True)
